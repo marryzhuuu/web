@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Лабораторная работа #1</title>
+    <script defer src="index.js"></script>
+    <style>
+        html {
+            height: 100%;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: monospace;
+            font-size: 1rem;
+            background-color: #1e1e1e;
+            color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .navbar {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1%;
+        }
+
+        .navbar .fire:hover {
+            color: #FF6961;
+            transition: ease 300ms;
+        }
+
+        #github {
+            text-decoration: none;
+        }
+
+        #github:hover {
+            color: gray;
+            transition: ease 300ms;
+        }
+
+        #info {
+            display: flex;
+            flex-direction: column;
+            font-size: 1rem;
+        }
+
+        #xs {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #xs input[type="button"] {
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #f0f0f0;
+            cursor: pointer;
+        }
+
+        #y {
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #f0f0f0;
+        }
+
+        #r {
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #f0f0f0;
+            padding: 0 1rem 0 0.5rem;
+        }
+
+        #data-form button[type="submit"] {
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #f0f0f0;
+        }
+
+        .container {
+            padding: 2%;
+            display: flex;
+            flex: 1;
+            flex-direction: row;
+            justify-content: space-between;
+            height: 100vh;
+        }
+
+        .input-section {
+            padding-top: 33vh;
+        }
+
+        .results-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #data-form fieldset {
+            margin-bottom: 1%;
+        }
+
+        #result-table {
+            border: 1px solid #444;
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        #result-table th, td {
+            border: 1px solid #555;
+            padding: 10px;
+            text-align: center;
+        }
+
+        #result-table th {
+            background-color: #333;
+            color: #f0f0f0;
+        }
+
+        #result-table td {
+            background-color: #2a2a2a;
+        }
+
+        #copyright {
+            padding: 1%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: .5em;
+        }
+
+        #error {
+            color: #FF6961;
+            padding: 1%;
+        }
+
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div id="info">
+        Жукова Мария
+        <br/>
+        P3232
+        <br/>
+        <span>v. <span class="fire">381731</span></span>
+    </div>
+    <a href="https://github.com/marryzhuuu/web" target="_blank" id="github">github</a>
+</nav>
+<main class="container">
+    <section class="input-section">
+        <form action="/" method="GET" id="data-form">
+            <fieldset id="xs">
+                <legend>Select X:</legend>
+                <input type="button" name="x" value="-3">
+                <input type="button" name="x" value="-2">
+                <input type="button" name="x" value="-1">
+                <input type="button" name="x" value="0">
+                <input type="button" name="x" value="1">
+                <input type="button" name="x" value="2">
+                <input type="button" name="x" value="3">
+                <input type="button" name="x" value="4">
+                <input type="button" name="x" value="5">
+            </fieldset>
+
+            <label for="y">Enter Y:</label>
+            <input type="number" id="y" name="y" required>
+
+            <label for="r">Select R:</label>
+            <select id="r" name="r" required>
+                <option value="1.0">1.0</option>
+                <option value="1.5">1.5</option>
+                <option value="2.0">2.0</option>
+                <option value="2.5">2.5</option>
+                <option value="3.0">3.0</option>
+            </select>
+
+            <button type="submit">Submit</button>
+        </form>
+        <div id="error" hidden>
+        </div>
+    </section>
+    <section class="results-section">
+        <canvas id="graph" width="300" height="300"></canvas>
+        <table id="result-table">
+            <tr>
+                <th>x</th>
+                <th>y</th>
+                <th>r</th>
+                <th>time</th>
+                <th>execution time</th>
+                <th>result</th>
+            </tr>
+        </table>
+    </section>
+</main>
+</body>
+</html>
