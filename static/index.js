@@ -1,61 +1,76 @@
 "use strict";
 
+const inputX = document.getElementById("x");
+const inputY = document.getElementById("y");
+
+// Инициализация полей формы
+inputX.value = "";
+inputY.value = "";
+let selectedBtn = null;
 const state = {
-    x: 0,
-    y: 0,
-    r: 1.0,
 };
 
 const table = document.getElementById("result-table");
 const error = document.getElementById("error");
-const possibleXs = new Set([-3, -2, -1, 0, 1, 2, 3, 4, 5]);
-const possibleRs = new Set([1.0, 1.5, 2.0, 2.5, 3.0]);
 
+// Валидация вводимых данных
 const validateState = (state) => {
-    if (isNaN(state.x) || !possibleXs.has(state.x)) {
+    if (isNaN(state.x) || state.x < -3. || state.x > 5.) {
         error.hidden = false;
-        error.innerText = `x must be in [${[...possibleXs].join(" ,")}]`;
+        error.innerText = "X должно быть в диапазоне (-3...5)";
         throw new Error("Invalid state");
     }
 
-    if (isNaN(state.y) || state.y < -3 || state.y > 5) {
+    if (isNaN(state.y) || state.y < -5 || state.y > 5) {
         error.hidden = false;
-        error.innerText = "y must be in range [-3, 5]";
+        error.innerText = "Y должно быть в диапазоне (-5...5)";
         throw new Error("Invalid state");
     }
 
-    if (isNaN(state.r) || !possibleRs.has(state.r)) {
+    if (isNaN(state.r)) {
         error.hidden = false;
-        error.innerText = `r must be in [${[...possibleRs].join(" ,")}]`;
+        error.innerText = `Необходимо выбрать радиус R`;
         throw new Error("Invalid state");
     }
+
 
     error.hidden = true;
 }
 
-let selectedBtn = null;
 
-Array.from(document.getElementById("xs").children)
-    .filter(c => c.tagName === "INPUT")
-    .forEach(btn => {
-        btn.style.border = "";
-        btn.addEventListener("click", function (ev) {
-            if (selectedBtn !== null) {
-                selectedBtn.style.border = "";
-            }
-            selectedBtn = btn;
-            state.x = parseInt(ev.target.value);
-            selectedBtn.style.border = "#FF6961 1px solid";
-        });
-    });
+// Обработка ввода
+inputX.addEventListener("change", (ev) => {
+    state.x = parseFloat(ev.target.value);
+});
 
-document.getElementById("y").addEventListener("change", (ev) => {
+inputY.addEventListener("change", (ev) => {
     state.y = parseFloat(ev.target.value);
 });
 
-document.getElementById("r").addEventListener("change", (ev) => {
-    state.r = parseFloat(ev.target.value);
-});
+Array.from(document.getElementById("rs").children)
+    .filter(c => c.tagName === "INPUT")
+    .forEach(btn => {
+        btn.style.borderColor = "";
+        btn.style.borderRadius = ""
+        btn.addEventListener("click", function (ev) {
+            selectedBtn = btn;
+
+            Array.from(document.getElementById("rs").children)
+                .filter(c => c.tagName === "INPUT")
+                .forEach(btn => {
+                    if (btn == selectedBtn) {
+                        btn.style.borderColor = "#3399ff";
+                        btn.style.borderRadius = "5px"
+                    } else {
+                        btn.style.borderColor = "";
+                        btn.style.borderRadius = ""
+                    }
+                });
+
+            state.r = parseInt(ev.target.value);
+
+        });
+    });
 
 document.getElementById("data-form").addEventListener("submit", async function (ev) {
     ev.preventDefault();
@@ -133,19 +148,21 @@ prevResults.forEach(result => {
     rowResult.innerText = result.result;
 });
 
+// Рисование легенды на канвасе
 const canvas = document.getElementById('graph');
 const ctx = canvas.getContext('2d');
 
+// Размеры, пропорции, начало координат
 const width = canvas.width;
 const height = canvas.height;
 const R = 100;
 const centerX = width / 2;
 const centerY = height / 2;
 
-ctx.fillStyle = 'rgba(51, 153, 255, 0.2)';
+ctx.fillStyle = '#3399ff';
 
 ctx.beginPath();
-ctx.rect(centerX - R / 2, centerY - R, R / 2, R);
+ctx.rect(centerX, centerY - R, R, R);
 ctx.fill();
 
 ctx.beginPath();
@@ -156,17 +173,18 @@ ctx.fill();
 
 ctx.beginPath();
 ctx.moveTo(centerX, centerY);
-ctx.lineTo(centerX - R, centerY);
-ctx.lineTo(centerX, centerY + R / 2);
+ctx.lineTo(centerX - R / 2, centerY);
+ctx.lineTo(centerX, centerY - R / 2);
 ctx.closePath();
 ctx.fill();
 
 ctx.beginPath();
 ctx.moveTo(centerX, 0);  // Y-axis
 ctx.lineTo(centerX, height);
+ctx.strokeText("Y", centerX + 6, 10);
 ctx.moveTo(0, centerY);  // X-axis
 ctx.lineTo(width, centerY);
-ctx.strokeStyle = "white";
+ctx.strokeText("X", width - 10, centerY - 10);
 ctx.stroke();
 
 ctx.font = "12px monospace";
