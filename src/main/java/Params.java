@@ -57,7 +57,7 @@ class Params {
 
         try {
             var yy = Float.parseFloat(y);
-            if (yy < -3 || yy > 5) {
+            if (yy < -5 || yy > 5) {
                 throw new ValidationException("y has forbidden value");
             }
         } catch (NumberFormatException e) {
@@ -71,7 +71,7 @@ class Params {
 
         try {
             var rr = Float.parseFloat(r);
-            if (rr < 1 || rr > 3) {
+            if (rr < 0) {
                 throw new ValidationException("r has forbidden value");
             }
         } catch (NumberFormatException e) {

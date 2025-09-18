@@ -58,6 +58,15 @@ public class Main {
     }
 
     private static boolean calculate(float x, float y, float r) {
-        // ToDo: определить попадание точки в фигуру
+        if (x<0 && y<0) {
+            return false;
+        }
+        if (x>r && y>r) {
+            return false;
+        }
+        if (x<0 && y>0 && y > x + r/2) {
+            return false;
+        }
+        return !(x > 0) || !(y < 0) || !((x * x + y * y) > (r / 2) * (r / 2));
     }
 }
