@@ -88,7 +88,7 @@ document.getElementById("data-form").addEventListener("submit", async function (
 
     const params = new URLSearchParams(state);
 
-    const response = await fetch("/calculate/app.jar?" + params.toString());
+    const response = await fetch("/fcgi-bin/web.jar?" + params.toString());
 
     const results = {
         x: state.x,
