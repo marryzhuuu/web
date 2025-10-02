@@ -63,12 +63,12 @@ public class Main {
         if (x<0 && y<0) {
             return false;
         }
-        if (x>r && y>r) {
+        if ( x>=0 && y>=0 && (x>r || y>r)) {
             return false;
         }
-        if (x<0 && y>0 && y > x + r/2) {
+        if (x<=0 && y>=0 && y > x + r/2) {
             return false;
         }
-        return !(x > 0) || !(y < 0) || !((x * x + y * y) > (r / 2) * (r / 2));
+        return !(x >= 0) || !(y <= 0) || !((x * x + y * y) > (r / 2) * (r / 2));
     }
 }
