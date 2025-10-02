@@ -21,7 +21,7 @@ const validateState = (state) => {
         throw new Error("Invalid state");
     }
 
-    if (isNaN(state.y) || state.y < -5 || state.y > 5) {
+    if (isNaN(state.y) || state.y < -5. || state.y > 5.) {
         error.hidden = false;
         error.innerText = "Y должно быть в диапазоне (-5...5)";
         throw new Error("Invalid state");
@@ -67,7 +67,7 @@ Array.from(document.getElementById("rs").children)
                     }
                 });
 
-            state.r = parseInt(ev.target.value);
+            state.r = parseFloat(ev.target.value);
 
         });
     });

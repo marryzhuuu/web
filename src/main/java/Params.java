@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 class Params {
-    private final int x;
+    private final float x;
     private final float y;
     private final float r;
 
@@ -16,7 +16,7 @@ class Params {
         }
         var params = splitQuery(query);
         validateParams(params);
-        this.x = Integer.parseInt(params.get("x"));
+        this.x = Float.parseFloat(params.get("x"));
         this.y = Float.parseFloat(params.get("y"));
         this.r = Float.parseFloat(params.get("r"));
     }
@@ -42,8 +42,8 @@ class Params {
         }
 
         try {
-            var xx = Integer.parseInt(x);
-            if (xx < -3 || xx > 5) {
+            var xx = Float.parseFloat(x);
+            if (xx < -3. || xx > 5.) {
                 throw new ValidationException("x has forbidden value");
             }
         } catch (NumberFormatException e) {
@@ -57,7 +57,7 @@ class Params {
 
         try {
             var yy = Float.parseFloat(y);
-            if (yy < -5 || yy > 5) {
+            if (yy < -5. || yy > 5.) {
                 throw new ValidationException("y has forbidden value");
             }
         } catch (NumberFormatException e) {
@@ -71,7 +71,7 @@ class Params {
 
         try {
             var rr = Float.parseFloat(r);
-            if (rr < 0) {
+            if (rr < 0.) {
                 throw new ValidationException("r has forbidden value");
             }
         } catch (NumberFormatException e) {
@@ -80,7 +80,7 @@ class Params {
     }
 
 
-    public int getX() {
+    public float getX() {
         return x;
     }
 
