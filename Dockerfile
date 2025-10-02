@@ -6,7 +6,7 @@ RUN gradle jar --no-daemon
 
 FROM eclipse-temurin:17-jre
 EXPOSE 7777
-RUN mkdir /app
-WORKDIR /app
-COPY --from=build /home/gradle/src/build/libs/*.jar /app/app.jar
-ENTRYPOINT ["java", "-DFCGI_PORT=7777", "-jar", "app.jar"]
+RUN mkdir /fcgi-bin
+WORKDIR /fcgi-bin
+COPY --from=build /home/gradle/src/build/libs/*.jar /fcgi-bin/web.jar
+ENTRYPOINT ["java", "-DFCGI_PORT=7777", "-jar", "web.jar"]
