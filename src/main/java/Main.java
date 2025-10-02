@@ -7,6 +7,7 @@ import java.time.temporal.ChronoUnit;
 
 public class Main {
     private static final String HTTP_RESPONSE = """
+            Status: 200 OK
             Content-Type: application/json
             Content-Length: %d
            
@@ -14,6 +15,7 @@ public class Main {
             %s
             """;
     private static final String HTTP_ERROR = """
+            Status: 400 Bad Request
             Content-Type: application/json
             Content-Length: %d
             

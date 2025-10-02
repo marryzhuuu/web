@@ -40,6 +40,9 @@ class Params {
         if (x == null || x.isEmpty()) {
             throw new ValidationException("x is invalid");
         }
+        if (x.length() > 8) {
+            throw new ValidationException("x maxLength exceeded");
+        }
 
         try {
             var xx = Float.parseFloat(x);
@@ -54,6 +57,9 @@ class Params {
         if (y == null || y.isEmpty()) {
             throw new ValidationException("y is invalid");
         }
+        if (y.length() > 8) {
+            throw new ValidationException("y maxLength exceeded");
+        }
 
         try {
             var yy = Float.parseFloat(y);
@@ -67,6 +73,9 @@ class Params {
         var r = params.get("r");
         if (r == null || r.isEmpty()) {
             throw new ValidationException("r is invalid");
+        }
+        if (r.length() > 8) {
+            throw new ValidationException("r maxLength exceeded");
         }
 
         try {
