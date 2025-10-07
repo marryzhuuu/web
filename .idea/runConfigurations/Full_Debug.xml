@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Full Debug" type="CompoundRunConfigurationType">
+    <toRun name="Start Gretty Debug" type="GradleRunConfiguration" />
+    <toRun name="Attach Debugger" type="Remote" />
+    <method v="2" />
+  </configuration>
+</component>
