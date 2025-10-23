@@ -116,18 +116,82 @@ rCheckboxes.forEach(checkbox => {
 
 function updateGraph() {
     const checkedR = document.querySelectorAll('.r-checkbox:checked');
-    if (checkedR.length === 0) return;
 
-    const r = parseFloat(checkedR[0].value);
+    let r = 1;
+    if (checkedR.length === 0) r = 1;
+    else r = parseFloat(checkedR[0].value)
+
     const scale = 150 / r;
 
     // Обновляем область
     const area = document.getElementById('area');
+
     area.setAttribute('d',
-        `M 0,0 L ${75 * scale},0 L ${75 * scale},${-150 * scale} L 0,${-150 * scale} Z
-         M 0,0 L ${75 * scale},0 L 0,${150 * scale} Z
-         M 0,0 A ${37.5 * scale},${37.5 * scale} 0 0,1 ${-37.5 * scale},${-37.5 * scale} L 0,0 Z`);
+        `
+         M 0,0 L 0,${-r/2 * scale} L ${-r * scale},${-r/2 * scale} L ${-r * scale},0 Z
+         M 0,0 L ${-r * scale},0 L 0,${r * scale} Z
+         M 0,0 L 0, ${-r * scale} A ${r * scale},${r * scale} 0 0,1 ${r * scale},0 L 0,0 Z
+         `
+    );
+
+    if (checkedR.length === 0) return;
+    // Обновляем засечки и подписи
+    updateGrid(r, scale, );
 }
 
+function updateGrid(r, scale) {
+    const gridGroup = document.getElementById('grid');
+
+    // Очищаем предыдущие засечки и подписи
+    while (gridGroup.firstChild) {
+        gridGroup.removeChild(gridGroup.firstChild);
+    }
+
+    // Координаты для засечек и подписей
+    const tickLength = 5; // Длина засечек
+
+    const values = [-r, -r / 2, r / 2, r];
+
+    values.forEach(value => {
+        const scaledValue = value * scale;
+        // X-axis ticks and labels
+        if (value !== 0) {
+            const xTick = document.createElementNS("http://www.w3.org/2000/svg", 'line');
+            xTick.setAttribute('x1', scaledValue);
+            xTick.setAttribute('y1', -tickLength);
+            xTick.setAttribute('x2', scaledValue);
+            xTick.setAttribute('y2', tickLength);
+            xTick.setAttribute('stroke', 'black');
+            xTick.setAttribute('stroke-width', 1);
+            gridGroup.appendChild(xTick);
+
+            const xLabel = document.createElementNS("http://www.w3.org/2000/svg", 'text');
+            xLabel.setAttribute('x', scaledValue - 5);
+            xLabel.setAttribute('y', -10); // выше оси X
+            xLabel.setAttribute('font-size', 10);
+            xLabel.textContent = value.toString();
+            gridGroup.appendChild(xLabel);
+        }
+
+        // Y-axis ticks and labels
+        if (value !== 0) { // Avoid duplicate label at origin
+            const yTick = document.createElementNS("http://www.w3.org/2000/svg", 'line');
+            yTick.setAttribute('x1', -tickLength);
+            yTick.setAttribute('y1', -scaledValue);
+            yTick.setAttribute('x2', tickLength);
+            yTick.setAttribute('y2', -scaledValue);
+            yTick.setAttribute('stroke', 'black');
+            yTick.setAttribute('stroke-width', 1);
+            gridGroup.appendChild(yTick);
+
+            const yLabel = document.createElementNS("http://www.w3.org/2000/svg", 'text');
+            yLabel.setAttribute('x', 10); // справа от оси Y
+            yLabel.setAttribute('y', -scaledValue + 5);
+            yLabel.setAttribute('font-size', 10);
+            yLabel.textContent = value.toString();
+            gridGroup.appendChild(yLabel);
+        }
+    });
+}
 // Инициализация графика
 updateGraph();

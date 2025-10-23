@@ -90,7 +90,7 @@
                 <line x1="0" y1="-200" x2="0" y2="200" stroke="black" stroke-width="2"/>
 
                 <!-- Подписи осей -->
-                <text x="190" y="10" font-size="12">X</text>
+                <text x="190" y="-10" font-size="12">X</text>
                 <text x="5" y="-190" font-size="12">Y</text>
 
                 <!-- Область (будет обновляться JavaScript) -->
