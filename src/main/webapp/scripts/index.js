@@ -3,6 +3,8 @@ const xButtons = document.querySelectorAll('.x-btn');
 const xInput = document.getElementById('x');
 const xError = document.getElementById('x-error');
 
+
+
 xButtons.forEach(button => {
     button.addEventListener('click', function() {
         // Снимаем выделение со всех кнопок
@@ -18,6 +20,15 @@ xButtons.forEach(button => {
 // Обработка чекбоксов для радиуса R
 const rCheckboxes = document.querySelectorAll('.r-checkbox');
 const rError = document.getElementById('r-error');
+
+// Получить параметры из текущего URL
+const urlParams = new URLSearchParams(window.location.search);
+const r = urlParams.get('r');
+const checkbox = Array.from(rCheckboxes).find(cb => cb.value == r);
+if (checkbox) checkbox.checked = true;
+
+
+
 
 rCheckboxes.forEach(checkbox => {
     checkbox.addEventListener('change', function() {
@@ -208,15 +219,17 @@ function updatePoints(checked) {
             const pointsGroup = document.getElementById('points');
             pointsGroup.innerHTML = ''; // Clear existing points
 
-            if (!data || !checked) return;
+            if (!data) return;
+
+            let pointIndex = 0;
+            let lastPointR = 0;
+            const checkedR = document.querySelectorAll('.r-checkbox:checked');
+            let r = 1;
+            if (checkedR.length === 0) r = 1;
+            else r = parseFloat(checkedR[0].value)
 
             data.forEach(point => {
-
-                const checkedR = document.querySelectorAll('.r-checkbox:checked');
-
-                let r = 1;
-                if (checkedR.length === 0) r = 1;
-                else r = parseFloat(checkedR[0].value)
+                pointIndex++;
 
                 const scale = 150 / r;
                 const scaledX = point.x * scale;
@@ -227,14 +240,18 @@ function updatePoints(checked) {
                 circle.setAttribute('cy', scaledY);
                 circle.setAttribute('r', 3);
 
-                if(point.hit) {
-                    circle.setAttribute('fill', 'green');
+
+
+                if (pointIndex == data.length && r == point.r) {
+                    circle.setAttribute('fill', point.hit ? 'green' : 'red');
+                    lastPointR = point.r;
                 } else {
-                    circle.setAttribute('fill', 'red');
+                    circle.setAttribute('fill', 'black');
                 }
 
                 pointsGroup.appendChild(circle);
             });
+
         });
 }
 

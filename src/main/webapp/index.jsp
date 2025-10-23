@@ -53,7 +53,7 @@
                     <legend>Радиус R</legend>
                     <div class="r-checkboxes">
                         <div class="r-checkbox-container">
-                            <input type="checkbox" class="r-checkbox" id="r1" name="r" value="1">
+                            <input type="checkbox" class="r-checkbox" id="r1" name="r" value="1.0">
                             <label for="r1" class="r-label">1</label>
                         </div>
                         <div class="r-checkbox-container">
@@ -62,7 +62,7 @@
                         </div>
 
                         <div class="r-checkbox-container">
-                            <input type="checkbox" class="r-checkbox" id="r3" name="r" value="2">
+                            <input type="checkbox" class="r-checkbox" id="r3" name="r" value="2.0">
                             <label for="r3" class="r-label">2</label>
                         </div>
 
@@ -72,7 +72,7 @@
                         </div>
 
                         <div class="r-checkbox-container">
-                            <input type="checkbox" class="r-checkbox" id="r5" name="r" value="3">
+                            <input type="checkbox" class="r-checkbox" id="r5" name="r" value="3.0">
                             <label for="r5" class="r-label">3</label>
                         </div>
                     </div>
