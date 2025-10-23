@@ -21,8 +21,11 @@ dependencies {
     implementation 'jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:3.0.0'
     implementation 'org.glassfish.web:jakarta.servlet.jsp.jstl:3.0.1'
 
+    implementation 'com.google.code.gson:gson:2.10.1'
+
     // Для JSP компиляции
     implementation 'org.apache.tomcat:tomcat-jasper:10.1.5'
+
 }
 
 tasks.withType(JavaCompile) {

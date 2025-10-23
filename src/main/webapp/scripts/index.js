@@ -134,9 +134,14 @@ function updateGraph() {
          `
     );
 
+
+    // Обновляем точки
+    updatePoints();
+
     if (checkedR.length === 0) return;
+
     // Обновляем засечки и подписи
-    updateGrid(r, scale, );
+    updateGrid(r, scale);
 }
 
 function updateGrid(r, scale) {
@@ -154,7 +159,7 @@ function updateGrid(r, scale) {
 
     values.forEach(value => {
         const scaledValue = value * scale;
-        // X-axis ticks and labels
+        // Ось X
         if (value !== 0) {
             const xTick = document.createElementNS("http://www.w3.org/2000/svg", 'line');
             xTick.setAttribute('x1', scaledValue);
@@ -173,8 +178,8 @@ function updateGrid(r, scale) {
             gridGroup.appendChild(xLabel);
         }
 
-        // Y-axis ticks and labels
-        if (value !== 0) { // Avoid duplicate label at origin
+        // ось Y
+        if (value !== 0) {
             const yTick = document.createElementNS("http://www.w3.org/2000/svg", 'line');
             yTick.setAttribute('x1', -tickLength);
             yTick.setAttribute('y1', -scaledValue);
@@ -193,5 +198,40 @@ function updateGrid(r, scale) {
         }
     });
 }
+
+function updatePoints() {
+    fetch('/points') // Replace with the URL of your Servlet
+        .then(response => response.json())
+        .then(data => {
+            const pointsGroup = document.getElementById('points');
+            pointsGroup.innerHTML = ''; // Clear existing points
+
+            data.forEach(point => { //Assumed that data is an array of json objects
+    const checkedR = document.querySelectorAll('.r-checkbox:checked');
+
+                let r = 1;
+                if (checkedR.length === 0) r = 1;
+                else r = parseFloat(checkedR[0].value)
+
+                const scale = 150 / r;
+                const scaledX = point.x * scale;
+                const scaledY = -point.y * scale;
+
+                const circle = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+                circle.setAttribute('cx', scaledX);
+                circle.setAttribute('cy', scaledY);
+                circle.setAttribute('r', 3);
+
+                if(point.hit) {
+                    circle.setAttribute('fill', 'green');
+                } else {
+                    circle.setAttribute('fill', 'red');
+                }
+
+                pointsGroup.appendChild(circle);
+            });
+        });
+}
+
 // Инициализация графика
 updateGraph();

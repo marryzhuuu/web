@@ -100,6 +100,7 @@
                 <g id="grid"></g>
 
                 <!-- Точки результатов -->
+                <!-- Points from session -->
                 <g id="points"></g>
             </svg>
             <p id="graphMessage"></p>

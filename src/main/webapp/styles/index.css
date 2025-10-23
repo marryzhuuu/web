@@ -127,6 +127,7 @@ th {
 #graph {
     border: 1px solid #ccc;
     cursor: crosshair;
+    margin-top: 10px;
 }
 .point {
     fill: blue;
