@@ -42,18 +42,18 @@ public class AreaCheckServlet extends HttpServlet {
     }
 
     private boolean checkHit(double x, double y, double r) {
-        // Прямоугольная область (первая четверть)
-        if (x >= 0 && y >= 0 && x <= r/2 && y <= r) {
+        // Квадрат (вторая четверть)
+        if (x <= 0 && y >= 0 && x >= -r && y <= r / 2) {
             return true;
         }
 
-        // Треугольная область (четвертая четверть)
-        if (x >= 0 && y <= 0 && y >= x - r/2) {
+        // Треугольник (третья четверть)
+        if (x <= 0 && y <= 0 && x >= -r && y >= -x - r) {
             return true;
         }
 
-        // Круговая область (третья четверть)
-        if (x <= 0 && y <= 0 && (x*x + y*y) <= (r/2)*(r/2)) {
+        // Круг (первая четверть)
+        if (x >= 0 && y >= 0 && (x * x + y * y) <= (r) * (r)) {
             return true;
         }
 

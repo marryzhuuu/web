@@ -89,13 +89,16 @@ graph.addEventListener('click', function(e) {
 
     // Установка значений в форму
     // Находим кнопку X с ближайшим значением
-    const closestX = findClosestX(realX);
+//    const closestX = findClosestX(realX);
+    const closestX = realX;
     const xButton = document.querySelector(`.x-btn[data-value="${closestX}"]`);
     if (xButton) {
         xButton.click(); // Эмулируем клик по кнопке
     }
+    document.getElementById('x').value = realX.toFixed(2);
 
     document.getElementById('y').value = realY.toFixed(2);
+//    document.getElementById('y').value = realY;
 
     // Отправляем форму
     document.getElementById('pointForm').submit();
@@ -118,7 +121,8 @@ function updateGraph() {
     const checkedR = document.querySelectorAll('.r-checkbox:checked');
 
     let r = 1;
-    if (checkedR.length === 0) r = 1;
+    const checked = checkedR.length !== 0
+    if (!checked) r = 1;
     else r = parseFloat(checkedR[0].value)
 
     const scale = 150 / r;
@@ -134,23 +138,21 @@ function updateGraph() {
          `
     );
 
-
     // Обновляем точки
-    updatePoints();
-
-    if (checkedR.length === 0) return;
+    updatePoints(checked);
 
     // Обновляем засечки и подписи
-    updateGrid(r, scale);
+    updateGrid(r, scale, checked);
 }
 
-function updateGrid(r, scale) {
+function updateGrid(r, scale, checked) {
     const gridGroup = document.getElementById('grid');
 
     // Очищаем предыдущие засечки и подписи
     while (gridGroup.firstChild) {
         gridGroup.removeChild(gridGroup.firstChild);
     }
+    if (!checked) return;
 
     // Координаты для засечек и подписей
     const tickLength = 5; // Длина засечек
@@ -199,15 +201,18 @@ function updateGrid(r, scale) {
     });
 }
 
-function updatePoints() {
+function updatePoints(checked) {
     fetch('/points') // Replace with the URL of your Servlet
         .then(response => response.json())
         .then(data => {
             const pointsGroup = document.getElementById('points');
             pointsGroup.innerHTML = ''; // Clear existing points
 
-            data.forEach(point => { //Assumed that data is an array of json objects
-    const checkedR = document.querySelectorAll('.r-checkbox:checked');
+            if (!data || !checked) return;
+
+            data.forEach(point => {
+
+                const checkedR = document.querySelectorAll('.r-checkbox:checked');
 
                 let r = 1;
                 if (checkedR.length === 0) r = 1;
