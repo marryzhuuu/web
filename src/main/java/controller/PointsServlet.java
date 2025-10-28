@@ -1,17 +1,16 @@
 package controller;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.util.ArrayList;
 import com.google.gson.Gson;
 import model.Result;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
 
 @WebServlet(name = "PointsServlet", value = "/points")
 public class PointsServlet extends HttpServlet {
@@ -25,10 +24,9 @@ public class PointsServlet extends HttpServlet {
             HttpSession session = request.getSession();
             ArrayList<Result> results = (ArrayList<Result>) session.getAttribute("results");
 
-            // Use a JSON library like Gson or Jackson to serialize the list to JSON
             Gson gson = new Gson();
             String json = gson.toJson(results);  // Convert the list to JSON
-//
+
             response.getWriter().write(json); // Send the JSON response
         } catch (NumberFormatException e) {
             response.sendRedirect(request.getContextPath() + "/");

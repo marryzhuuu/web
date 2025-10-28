@@ -1,11 +1,15 @@
 package controller;
 
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
-import jakarta.servlet.annotation.*;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpSession;
+
 import java.io.IOException;
-import java.util.Date;
 import java.util.ArrayList;
+import java.util.Date;
 import model.Result;
 
 @WebServlet(name = "AreaCheckServlet", value = "/check")
@@ -41,6 +45,12 @@ public class AreaCheckServlet extends HttpServlet {
         }
     }
 
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.sendRedirect(request.getContextPath() + "/");
+    }
+
     private boolean checkHit(double x, double y, double r) {
         // Квадрат (вторая четверть)
         if (x <= 0 && y >= 0 && x >= -r && y <= r / 2) {
@@ -59,4 +69,6 @@ public class AreaCheckServlet extends HttpServlet {
 
         return false;
     }
+
+
 }
