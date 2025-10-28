@@ -3,8 +3,6 @@ const xButtons = document.querySelectorAll('.x-btn');
 const xInput = document.getElementById('x');
 const xError = document.getElementById('x-error');
 
-
-
 xButtons.forEach(button => {
     button.addEventListener('click', function() {
         // Снимаем выделение со всех кнопок
@@ -20,14 +18,6 @@ xButtons.forEach(button => {
 // Обработка чекбоксов для радиуса R
 const rCheckboxes = document.querySelectorAll('.r-checkbox');
 const rError = document.getElementById('r-error');
-
-// Получить параметры из текущего URL
-const urlParams = new URLSearchParams(window.location.search);
-const r = urlParams.get('r');
-const checkbox = Array.from(rCheckboxes).find(cb => cb.value == r);
-if (checkbox) checkbox.checked = true;
-
-
 
 
 rCheckboxes.forEach(checkbox => {
@@ -98,162 +88,185 @@ graph.addEventListener('click', function(e) {
     const realX = x / scale;
     const realY = y / scale;
 
-    // Установка значений в форму
-    // Находим кнопку X с ближайшим значением
-//    const closestX = findClosestX(realX);
-    const closestX = realX;
-    const xButton = document.querySelector(`.x-btn[data-value="${closestX}"]`);
-    if (xButton) {
-        xButton.click(); // Эмулируем клик по кнопке
-    }
-    document.getElementById('x').value = realX.toFixed(2);
-
-    document.getElementById('y').value = realY.toFixed(2);
-//    document.getElementById('y').value = realY;
-
-    // Отправляем форму
-    document.getElementById('pointForm').submit();
+    sendToServer(realX, realY, r);
 });
 
-// Функция для нахождения ближайшего значения X
-function findClosestX(value) {
-    const xValues = [-3, -2, -1, 0, 1, 2, 3, 4, 5];
-    return xValues.reduce((prev, curr) => {
-        return (Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev);
-    });
+async function sendToServer(x, y, r) {
+  const data = await checkPoint(x, y, r);
+
+  if (!data.error) {
+    drawPoint(x, y, r, data.hit);
+    addToTable(x, y, r, data.hit, data.timestamp);
+  }
 }
 
-// Обновление графика при изменении R
-rCheckboxes.forEach(checkbox => {
-    checkbox.addEventListener('change', updateGraph);
+function addToTable(x, y, r, result, timestamp) {
+  const table = document.getElementById("resultsTable");
+
+  const newRow = table.insertRow();
+  newRow.insertCell().innerText = x.toFixed(1);
+  newRow.insertCell().innerText = y.toFixed(1);
+  newRow.insertCell().innerText = r.toFixed(1);
+  newRow.insertCell().innerHTML = result
+    ? "<span class=\"hit\">Попадание</span>"
+    : "<span class=\"miss\">Промах</span>";
+  newRow.insertCell().innerHTML = formatDate(timestamp);
+}
+
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  const table = document.getElementById("resultsTable");
+
+  if (table) {
+    for (let item of table.rows) {
+      const x = parseFloat(item.children[0].innerText.trim());
+      const y = parseFloat(item.children[1].innerText.trim());
+      const r = parseFloat(item.children[2].innerText.trim());
+      if (isNaN(x) || isNaN(y) || isNaN(r)) continue;
+
+      const result = item.children[3].innerText.trim() === "Попадание";
+      drawPoint(x, y, r, result);
+    }
+  }
 });
 
-function updateGraph() {
-    const checkedR = document.querySelectorAll('.r-checkbox:checked');
 
-    let r = 1;
-    const checked = checkedR.length !== 0
-    if (!checked) r = 1;
-    else r = parseFloat(checkedR[0].value)
 
-    const scale = 150 / r;
+function formatDate(inputString) {
+  const date = new Date(inputString);
 
-    // Обновляем область
+  const weekday = date.toLocaleString('en-US', { weekday: 'short', timeZone: 'Europe/Moscow' });
+  const month = date.toLocaleString('en-US', { month: 'short', timeZone: 'Europe/Moscow' });
+  const day = date.getDate();
+  const time = date.toLocaleString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+    timeZone: 'Europe/Moscow'
+  });
+  const year = date.getFullYear();
+
+  return `${weekday} ${month} ${day} ${time} MSK ${year}`;
+}
+
+async function checkPoint(x, y, r) {
+  const form = new FormData();
+  form.append("x", x.toFixed(1));
+  form.append("y", y.toFixed(1));
+  form.append("r", r.toFixed(1));
+  form.append("action", "checkPoint");
+
+  const params = new URLSearchParams(form).toString();
+
+  const url = "calculate";
+  const response = await fetch(url, {
+    method: "post",
+    body: params,
+    headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+    }
+  });
+
+  if (!response.ok) {
+    console.log("Не удалось отправить точку.");
+  }
+
+  const data = await response.json();
+  if (data.error) console.log(data.error);
+
+  return data;
+}
+
+
+function drawGraph() {
+    const scale = 150;
+
+    // область
     const area = document.getElementById('area');
 
     area.setAttribute('d',
         `
-         M 0,0 L 0,${-r/2 * scale} L ${-r * scale},${-r/2 * scale} L ${-r * scale},0 Z
-         M 0,0 L ${-r * scale},0 L 0,${r * scale} Z
-         M 0,0 L 0, ${-r * scale} A ${r * scale},${r * scale} 0 0,1 ${r * scale},0 L 0,0 Z
+         M 0,0 L 0,${-1/2 * scale} L ${-1 * scale},${-1/2 * scale} L ${-1 * scale},0 Z
+         M 0,0 L ${-1 * scale},0 L 0,${1 * scale} Z
+         M 0,0 L 0, ${-1 * scale} A ${1 * scale},${1 * scale} 0 0,1 ${1 * scale},0 L 0,0 Z
          `
     );
 
-    // Обновляем точки
-    updatePoints(checked);
-
-    // Обновляем засечки и подписи
-    updateGrid(r, scale, checked);
+    // засечки и подписи
+    drawGrid();
 }
 
-function updateGrid(r, scale, checked) {
+function  drawGrid() {
     const gridGroup = document.getElementById('grid');
-
-    // Очищаем предыдущие засечки и подписи
-    while (gridGroup.firstChild) {
-        gridGroup.removeChild(gridGroup.firstChild);
-    }
-    if (!checked) return;
 
     // Координаты для засечек и подписей
     const tickLength = 5; // Длина засечек
 
-    const values = [-r, -r / 2, r / 2, r];
+    const valueMappings = [
+      [-1, '-R'],
+      [-1/2, '-R/2'],
+      [1/2, 'R/2'],
+      [1, 'R']
+    ];
 
-    values.forEach(value => {
-        const scaledValue = value * scale;
+    valueMappings.forEach(value => {
+        const scale = value[0];
+        const label = value[1];
         // Ось X
-        if (value !== 0) {
-            const xTick = document.createElementNS("http://www.w3.org/2000/svg", 'line');
-            xTick.setAttribute('x1', scaledValue);
-            xTick.setAttribute('y1', -tickLength);
-            xTick.setAttribute('x2', scaledValue);
-            xTick.setAttribute('y2', tickLength);
-            xTick.setAttribute('stroke', 'black');
-            xTick.setAttribute('stroke-width', 1);
-            gridGroup.appendChild(xTick);
+        const xTick = document.createElementNS("http://www.w3.org/2000/svg", 'line');
+        xTick.setAttribute('x1', 150 * scale);
+        xTick.setAttribute('y1', -tickLength);
+        xTick.setAttribute('x2', 150 * scale);
+        xTick.setAttribute('y2', tickLength);
+        xTick.setAttribute('stroke', 'black');
+        xTick.setAttribute('stroke-width', 1);
+        gridGroup.appendChild(xTick);
 
-            const xLabel = document.createElementNS("http://www.w3.org/2000/svg", 'text');
-            xLabel.setAttribute('x', scaledValue - 5);
-            xLabel.setAttribute('y', -10); // выше оси X
-            xLabel.setAttribute('font-size', 10);
-            xLabel.textContent = value.toString();
-            gridGroup.appendChild(xLabel);
-        }
+        const xLabel = document.createElementNS("http://www.w3.org/2000/svg", 'text');
+        xLabel.setAttribute('x', 150 * scale - 5);
+        xLabel.setAttribute('y', -10); // выше оси X
+        xLabel.setAttribute('font-size', 12);
+        xLabel.textContent = label;
+        gridGroup.appendChild(xLabel);
 
         // ось Y
-        if (value !== 0) {
-            const yTick = document.createElementNS("http://www.w3.org/2000/svg", 'line');
-            yTick.setAttribute('x1', -tickLength);
-            yTick.setAttribute('y1', -scaledValue);
-            yTick.setAttribute('x2', tickLength);
-            yTick.setAttribute('y2', -scaledValue);
-            yTick.setAttribute('stroke', 'black');
-            yTick.setAttribute('stroke-width', 1);
-            gridGroup.appendChild(yTick);
+        const yTick = document.createElementNS("http://www.w3.org/2000/svg", 'line');
+        yTick.setAttribute('x1', -tickLength);
+        yTick.setAttribute('y1', -150 * scale);
+        yTick.setAttribute('x2', tickLength);
+        yTick.setAttribute('y2', -150 * scale);
+        yTick.setAttribute('stroke', 'black');
+        yTick.setAttribute('stroke-width', 1);
+        gridGroup.appendChild(yTick);
 
-            const yLabel = document.createElementNS("http://www.w3.org/2000/svg", 'text');
-            yLabel.setAttribute('x', 10); // справа от оси Y
-            yLabel.setAttribute('y', -scaledValue + 5);
-            yLabel.setAttribute('font-size', 10);
-            yLabel.textContent = value.toString();
-            gridGroup.appendChild(yLabel);
-        }
+        const yLabel = document.createElementNS("http://www.w3.org/2000/svg", 'text');
+        yLabel.setAttribute('x', 10); // справа от оси Y
+        yLabel.setAttribute('y', -150 * scale + 5);
+        yLabel.setAttribute('font-size', 12);
+        yLabel.textContent = label;
+        gridGroup.appendChild(yLabel);
     });
 }
 
-function updatePoints(checked) {
-    fetch('/points') // Replace with the URL of your Servlet
-        .then(response => response.json())
-        .then(data => {
-            const pointsGroup = document.getElementById('points');
-            pointsGroup.innerHTML = ''; // Clear existing points
 
-            if (!data) return;
+function drawPoint(x, y, r, hit) {
+    const pointsGroup = document.getElementById('points');
+    const scale = 150;
+    const scaledX = x * scale / r;
+    const scaledY = -y * scale / r;
 
-            let pointIndex = 0;
-            let lastPointR = 0;
-            const checkedR = document.querySelectorAll('.r-checkbox:checked');
-            let r = 1;
-            if (checkedR.length === 0) r = 1;
-            else r = parseFloat(checkedR[0].value)
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+    circle.setAttribute('cx', scaledX);
+    circle.setAttribute('cy', scaledY);
+    circle.setAttribute('r', 3);
 
-            data.forEach(point => {
-                pointIndex++;
+    circle.setAttribute('fill', hit ? 'green' : 'red');
 
-                const scale = 150 / r;
-                const scaledX = point.x * scale;
-                const scaledY = -point.y * scale;
-
-                const circle = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
-                circle.setAttribute('cx', scaledX);
-                circle.setAttribute('cy', scaledY);
-                circle.setAttribute('r', 3);
-
-
-
-                if (pointIndex == data.length && r == point.r) {
-                    circle.setAttribute('fill', point.hit ? 'green' : 'red');
-                    lastPointR = point.r;
-                } else {
-                    circle.setAttribute('fill', 'black');
-                }
-
-                pointsGroup.appendChild(circle);
-            });
-
-        });
+    pointsGroup.appendChild(circle);
 }
 
 // Инициализация графика
-updateGraph();
+drawGraph();

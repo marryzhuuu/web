@@ -93,7 +93,7 @@
                 <text x="190" y="-10" font-size="12">X</text>
                 <text x="5" y="-190" font-size="12">Y</text>
 
-                <!-- Область (будет обновляться JavaScript) -->
+                <!-- Область -->
                 <path id="area" fill="lightblue" fill-opacity="0.5" stroke="blue"/>
 
                 <!-- Сетка и разметка -->
@@ -109,7 +109,7 @@
 
     <div class="results-section">
         <h2>Результаты проверок</h2>
-        <table>
+        <table id="resultsTable">
             <thead>
                 <tr>
                     <th>X</th>
@@ -119,7 +119,7 @@
                     <th>Время</th>
                 </tr>
             </thead>
-            <tbody id="resultsTable">
+            <tbody>
                 <%
                     ArrayList<Result> results = (ArrayList<Result>) session.getAttribute("results");
                     if (results != null) {

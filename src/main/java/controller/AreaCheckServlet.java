@@ -10,6 +10,10 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.google.gson.Gson;
 import model.Result;
 
 @WebServlet(name = "AreaCheckServlet", value = "/check")
@@ -33,13 +37,28 @@ public class AreaCheckServlet extends HttpServlet {
             results.add(resultObj);
             session.setAttribute("results", results);
 
-            request.setAttribute("result", resultObj);
-            request.setAttribute("x", x);
-            request.setAttribute("y", y);
-            request.setAttribute("r", r);
+            var action = request.getParameter("action");
 
-            request.getRequestDispatcher("/result.jsp").forward(request, response);
+            if ("checkPoint".equals(action)) {
+                var gson = new Gson();
+                Map<String, Object> json = new HashMap<>();
+                json.put("x", x);
+                json.put("y", y);
+                json.put("r", r);
+                json.put("hit", result);
+                json.put("timestamp", resultObj.getTimestamp());
+                var msg = gson.toJson(json);
 
+                response.setContentType("application/json");
+                response.getWriter().write(msg);
+            } else {
+                request.setAttribute("result", resultObj);
+                request.setAttribute("x", x);
+                request.setAttribute("y", y);
+                request.setAttribute("r", r);
+
+                request.getRequestDispatcher("/result.jsp").forward(request, response);
+            }
         } catch (NumberFormatException e) {
             response.sendRedirect(request.getContextPath() + "/");
         }

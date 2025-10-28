@@ -26,14 +26,4 @@
         <url-pattern>/calculate/*</url-pattern>
     </servlet-mapping>
 
-    <servlet>
-        <servlet-name>PointsServlet</servlet-name>
-        <servlet-class>controller.PointsServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>PointsServlet</servlet-name>
-        <url-pattern>/points/*</url-pattern>
-    </servlet-mapping>
-
-
 </web-app>
