@@ -78,6 +78,8 @@ graph.addEventListener('click', function(e) {
         return;
     }
 
+    graphMessage.textContent = '';
+
     const r = parseFloat(checkedR[0].value);
     const rect = graph.getBoundingClientRect();
     const x = e.clientX - rect.left - 200;

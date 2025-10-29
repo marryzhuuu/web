@@ -4,6 +4,7 @@ plugins {
     id 'org.gretty' version '4.1.0'
 }
 
+version = '1.0.0'
 sourceCompatibility = '11'
 
 repositories {
@@ -11,15 +12,13 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
-    compileOnly 'javax.ejb:javax.ejb-api:3.2'
-    compileOnly 'javax.enterprise:cdi-api:2.0'
+    compileOnly 'jakarta.platform:jakarta.jakartaee-web-api:8.0.0'
 
     // Gson
     implementation 'com.google.code.gson:gson:2.10.1'
 
-    // JSTL для Java EE (javax)
-    implementation 'javax.servlet:jstl:1.2'
+    // JSTL
+    implementation 'org.glassfish.web:jakarta.servlet.jsp.jstl:2.0.0'
 }
 
 tasks.withType(JavaCompile) {
