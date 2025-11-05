@@ -38,6 +38,10 @@ rCheckboxes.forEach(checkbox => {
     });
 });
 
+function isValidFloat(str) {
+    return /^-?\d*\.?\d+$/.test(str.trim());
+}
+
 // Валидация формы
 document.getElementById('pointForm').addEventListener('submit', function(e) {
     let isValid = true;
@@ -53,7 +57,7 @@ document.getElementById('pointForm').addEventListener('submit', function(e) {
     const yValue = parseFloat(yInput.value);
     const yError = document.getElementById('y-error');
 
-    if (isNaN(yValue) || yValue < -3 || yValue > 5) {
+    if (isNaN(yValue) || yValue < -3 || yValue > 5 || !isValidFloat(yInput.value)) {
         yError.style.display = 'block';
         isValid = false;
     } else {
