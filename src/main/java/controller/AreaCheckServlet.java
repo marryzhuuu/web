@@ -71,7 +71,7 @@ public class AreaCheckServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/");
     }
 
-    private boolean checkHit(double x, double y, double r) {
+    public static boolean checkHit(double x, double y, double r) {
         // Квадрат (вторая четверть)
         if (x <= 0 && y >= 0 && x >= -r && y <= r / 2) {
             return true;

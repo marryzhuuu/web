@@ -19,6 +19,12 @@ xButtons.forEach(button => {
 const rCheckboxes = document.querySelectorAll('.r-checkbox');
 const rError = document.getElementById('r-error');
 
+// Получить параметры из текущего URL и чекнуть радиус
+const urlParams = new URLSearchParams(window.location.search);
+const r = urlParams.get('r');
+const checkbox = Array.from(rCheckboxes).find(cb => cb.value == r);
+if (checkbox) checkbox.checked = true;
+
 
 rCheckboxes.forEach(checkbox => {
     checkbox.addEventListener('change', function() {
@@ -121,7 +127,7 @@ function addToTable(x, y, r, result, timestamp) {
 document.addEventListener("DOMContentLoaded", () => {
   const table = document.getElementById("resultsTable");
 
-  if (table) {
+  if (table && table.rows.length > 2) {
     for (let item of table.rows) {
       const x = parseFloat(item.children[0].innerText.trim());
       const y = parseFloat(item.children[1].innerText.trim());
@@ -129,7 +135,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (isNaN(x) || isNaN(y) || isNaN(r)) continue;
 
       const result = item.children[3].innerText.trim() === "Попадание";
-      drawPoint(x, y, r, result);
     }
   }
 });
@@ -182,24 +187,6 @@ async function checkPoint(x, y, r) {
   return data;
 }
 
-
-function drawGraph() {
-    const scale = 150;
-
-    // область
-    const area = document.getElementById('area');
-
-    area.setAttribute('d',
-        `
-         M 0,0 L 0,${-1/2 * scale} L ${-1 * scale},${-1/2 * scale} L ${-1 * scale},0 Z
-         M 0,0 L ${-1 * scale},0 L 0,${1 * scale} Z
-         M 0,0 L 0, ${-1 * scale} A ${1 * scale},${1 * scale} 0 0,1 ${1 * scale},0 L 0,0 Z
-         `
-    );
-
-    // засечки и подписи
-    drawGrid();
-}
 
 function  drawGrid() {
     const gridGroup = document.getElementById('grid');
@@ -294,5 +281,135 @@ function clearHistory() {
 }
 
 
+// Обновление графика при изменении R
+rCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', updateGraph);
+});
+
+function updateGraph() {
+    const checkedR = document.querySelectorAll('.r-checkbox:checked');
+
+    let r = 1;
+    const checked = checkedR.length !== 0
+    if (!checked) r = 1;
+    else r = parseFloat(checkedR[0].value)
+
+    const scale = 150 / r;
+
+    // Обновляем область
+    const area = document.getElementById('area');
+
+    area.setAttribute('d',
+        `
+         M 0,0 L 0,${-r/2 * scale} L ${-r * scale},${-r/2 * scale} L ${-r * scale},0 Z
+         M 0,0 L ${-r * scale},0 L 0,${r * scale} Z
+         M 0,0 L 0, ${-r * scale} A ${r * scale},${r * scale} 0 0,1 ${r * scale},0 L 0,0 Z
+         `
+    );
+
+    // Обновляем точки
+    updatePoints(checked, r);
+
+    // Обновляем засечки и подписи
+    updateGrid(r, scale, checked);
+}
+
+function updateGrid(r, scale, checked) {
+    const gridGroup = document.getElementById('grid');
+
+    // Очищаем предыдущие засечки и подписи
+    while (gridGroup.firstChild) {
+        gridGroup.removeChild(gridGroup.firstChild);
+    }
+    if (!checked) {
+        drawGrid();
+        return;
+    }
+
+    // Координаты для засечек и подписей
+    const tickLength = 5; // Длина засечек
+
+    const values = [-r, -r / 2, r / 2, r];
+
+    values.forEach(value => {
+        const scaledValue = value * scale;
+        // Ось X
+        if (value !== 0) {
+            const xTick = document.createElementNS("http://www.w3.org/2000/svg", 'line');
+            xTick.setAttribute('x1', scaledValue);
+            xTick.setAttribute('y1', -tickLength);
+            xTick.setAttribute('x2', scaledValue);
+            xTick.setAttribute('y2', tickLength);
+            xTick.setAttribute('stroke', 'black');
+            xTick.setAttribute('stroke-width', 1);
+            gridGroup.appendChild(xTick);
+
+            const xLabel = document.createElementNS("http://www.w3.org/2000/svg", 'text');
+            xLabel.setAttribute('x', scaledValue - 5);
+            xLabel.setAttribute('y', -10); // выше оси X
+            xLabel.setAttribute('font-size', 12);
+            xLabel.textContent = value.toString();
+            gridGroup.appendChild(xLabel);
+        }
+
+        // ось Y
+        if (value !== 0) {
+            const yTick = document.createElementNS("http://www.w3.org/2000/svg", 'line');
+            yTick.setAttribute('x1', -tickLength);
+            yTick.setAttribute('y1', -scaledValue);
+            yTick.setAttribute('x2', tickLength);
+            yTick.setAttribute('y2', -scaledValue);
+            yTick.setAttribute('stroke', 'black');
+            yTick.setAttribute('stroke-width', 1);
+            gridGroup.appendChild(yTick);
+
+            const yLabel = document.createElementNS("http://www.w3.org/2000/svg", 'text');
+            yLabel.setAttribute('x', 10); // справа от оси Y
+            yLabel.setAttribute('y', -scaledValue + 5);
+            yLabel.setAttribute('font-size', 12);
+            yLabel.textContent = value.toString();
+            gridGroup.appendChild(yLabel);
+        }
+    });
+}
+
+function updatePoints(checked, r) {
+    const pointsGroup = document.getElementById('points');
+    pointsGroup.innerHTML = ''; // Clear existing points
+
+    if (!checked) return;
+
+    fetch(`/points?r=${r}`)
+        .then(response => response.json())
+        .then(data => {
+
+            if (!data) return;
+
+            let pointIndex = 0;
+            let lastPointR = 0;
+            const checkedR = document.querySelectorAll('.r-checkbox:checked');
+            let r = 1;
+            if (checkedR.length === 0) r = 1;
+            else r = parseFloat(checkedR[0].value)
+
+            data.forEach(point => {
+                pointIndex++;
+
+                const scale = 150 / r;
+                const scaledX = point.x * scale;
+                const scaledY = -point.y * scale;
+
+                const circle = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+                circle.setAttribute('cx', scaledX);
+                circle.setAttribute('cy', scaledY);
+                circle.setAttribute('r', 3);
+                circle.setAttribute('fill', point.hit ? 'green' : 'red');
+
+                pointsGroup.appendChild(circle);
+            });
+
+        });
+}
+
 // Инициализация графика
-drawGraph();
+updateGraph();

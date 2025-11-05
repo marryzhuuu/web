@@ -43,7 +43,7 @@
             </tr>
         </table>
 
-        <a href="/" class="back-link">Вернуться к форме</a>
+        <a href="/?r=${r}" class="back-link">Вернуться к форме</a>
     </div>
 </body>
 </html>
