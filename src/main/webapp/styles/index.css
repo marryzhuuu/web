@@ -136,6 +136,11 @@ th {
 .hit-point { fill: green; }
 .miss-point { fill: red; }
 
+.clear-history-btn {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
 .error-message {
     color: #e74c3c;
     font-size: 12px;

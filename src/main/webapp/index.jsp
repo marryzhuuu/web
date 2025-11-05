@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page import="java.util.ArrayList" %>
+<%@ page import="java.util.List" %>
 <%@ page import="model.Result" %>
+<%@ page import="model.ResultManager" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -109,6 +110,10 @@
 
     <div class="results-section">
         <h2>Результаты проверок</h2>
+
+        <!-- Кнопка очистки истории -->
+        <button class="clear-history-btn" onclick="clearHistory()">Очистить историю</button>
+
         <table id="resultsTable">
             <thead>
                 <tr>
@@ -121,8 +126,10 @@
             </thead>
             <tbody>
                 <%
-                    ArrayList<Result> results = (ArrayList<Result>) session.getAttribute("results");
-                    if (results != null) {
+                    ServletContext context = application;
+                    List<Result> results = ResultManager.getResults(context);
+
+                    if (results != null && !results.isEmpty()) {
                         for (Result result : results) {
                 %>
                 <tr>
@@ -136,6 +143,12 @@
                 </tr>
                 <%
                         }
+                    } else {
+                %>
+                <tr>
+                    <td colspan="5" style="text-align: center;">Нет данных</td>
+                </tr>
+                <%
                     }
                 %>
             </tbody>

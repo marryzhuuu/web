@@ -106,9 +106,9 @@ function addToTable(x, y, r, result, timestamp) {
   const table = document.getElementById("resultsTable");
 
   const newRow = table.insertRow();
-  newRow.insertCell().innerText = x.toFixed(1);
-  newRow.insertCell().innerText = y.toFixed(1);
-  newRow.insertCell().innerText = r.toFixed(1);
+  newRow.insertCell().innerText = x.toFixed(2);
+  newRow.insertCell().innerText = y.toFixed(2);
+  newRow.insertCell().innerText = r.toFixed(2);
   newRow.insertCell().innerHTML = result
     ? "<span class=\"hit\">Попадание</span>"
     : "<span class=\"miss\">Промах</span>";
@@ -156,9 +156,9 @@ function formatDate(inputString) {
 
 async function checkPoint(x, y, r) {
   const form = new FormData();
-  form.append("x", x.toFixed(1));
-  form.append("y", y.toFixed(1));
-  form.append("r", r.toFixed(1));
+  form.append("x", x.toFixed(2));
+  form.append("y", y.toFixed(2));
+  form.append("r", r.toFixed(2));
   form.append("action", "checkPoint");
 
   const params = new URLSearchParams(form).toString();
@@ -269,6 +269,30 @@ function drawPoint(x, y, r, hit) {
 
     pointsGroup.appendChild(circle);
 }
+
+// Функция для очистки истории
+function clearHistory() {
+    if (confirm('Вы уверены, что хотите очистить всю историю проверок?')) {
+        fetch('clear-history', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // Обновляем таблицу
+                location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ошибка при очистке истории');
+        });
+    }
+}
+
 
 // Инициализация графика
 drawGraph();

@@ -1,14 +1,13 @@
 package controller;
 
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
 
 import model.Result;
@@ -17,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.google.gson.Gson;
+import model.ResultManager;
 
 @WebServlet(name = "AreaCheckServlet", value = "/check")
 public class AreaCheckServlet extends HttpServlet {
@@ -29,15 +29,14 @@ public class AreaCheckServlet extends HttpServlet {
             double r = Double.parseDouble(request.getParameter("r"));
 
             boolean result = checkHit(x, y, r);
+
+
+            // Создаем объект результата
             Result resultObj = new Result(x, y, r, result, new Date());
 
-            HttpSession session = request.getSession();
-            ArrayList<Result> results = (ArrayList<Result>) session.getAttribute("results");
-            if (results == null) {
-                results = new ArrayList<>();
-            }
-            results.add(resultObj);
-            session.setAttribute("results", results);
+            // Сохраняем в контекст приложения
+            ServletContext context = getServletContext();
+            ResultManager.addResult(context, resultObj);
 
             var action = request.getParameter("action");
 
@@ -51,7 +50,7 @@ public class AreaCheckServlet extends HttpServlet {
                 json.put("timestamp", resultObj.getTimestamp());
                 var msg = gson.toJson(json);
 
-                response.setContentType("application/json");
+                response.setContentType("application/json;charset=UTF-8");
                 response.getWriter().write(msg);
             } else {
                 request.setAttribute("result", resultObj);
