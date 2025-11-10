@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns="http://www.w.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<h:head>
+    <title>Web Lab 3 - Main Page</title>
+    <h:outputStylesheet library="styles" name="style.css"/>
+    <h:outputScript library="scripts" name="main.js" target="head"/>
+</h:head>
+<h:body onload="drawGraph()">
+    <div class="container">
+        <div class="header">
+            <h1>Лабораторная работа #3</h1>
+            <h:link outcome="index" value="← Назад к стартовой странице" styleClass="back-link"/>
+        </div>
+
+        <div class="content">
+            <!-- Input Form -->
+            <div class="input-section">
+                <h:form id="input-form">
+                    <h3>Введите координаты точки и радиус:</h3>
+
+                    <div class="form-group">
+                        <label>Координата X:</label>
+                        <h:selectOneMenu id="x" value="#{areaCheckBean.x}" validator="coordinatesValidator">
+                            <f:selectItem itemValue="-3" itemLabel="-3"/>
+                            <f:selectItem itemValue="-2" itemLabel="-2"/>
+                            <f:selectItem itemValue="-1" itemLabel="-1"/>
+                            <f:selectItem itemValue="0" itemLabel="0"/>
+                            <f:selectItem itemValue="1" itemLabel="1"/>
+                            <f:selectItem itemValue="2" itemLabel="2"/>
+                            <f:selectItem itemValue="3" itemLabel="3"/>
+                            <f:selectItem itemValue="4" itemLabel="4"/>
+                            <f:selectItem itemValue="5" itemLabel="5"/>
+                        </h:selectOneMenu>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Координата Y:</label>
+                        <h:inputText id="y" value="#{areaCheckBean.y}" validator="coordinatesValidator">
+                            <f:validateDoubleRange minimum="-3" maximum="5"/>
+                        </h:inputText>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Радиус R:</label>
+                        <h:inputText id="r" value="#{areaCheckBean.r}" validator="coordinatesValidator">
+                            <f:validateDoubleRange minimum="1" maximum="4"/>
+                            <f:ajax event="valueChange" render="area-canvas results-table"/>
+                        </h:inputText>
+                    </div>
+
+                    <h:commandButton value="Проверить" action="#{areaCheckBean.checkPoint}">
+                        <f:ajax execute="input-form" render="results-table area-canvas"/>
+                    </h:commandButton>
+                </h:form>
+            </div>
+
+            <!-- Graph Section -->
+            <div class="graph-section">
+                <h:form id="graph-form">
+                    <h3>Область проверки:</h3>
+                    <canvas id="area-canvas" width="300" height="300" onclick="handleCanvasClick(event)"></canvas>
+
+                    <h:inputHidden id="hidden-x" value="#{areaCheckBean.x}"/>
+                    <h:inputHidden id="hidden-y" value="#{areaCheckBean.y}"/>
+                    <h:commandButton id="graph-check" value="Check from Graph" style="display:none"
+                                     action="#{areaCheckBean.checkPoint}">
+                        <f:ajax execute="graph-form" render="results-table area-canvas"/>
+                    </h:commandButton>
+                </h:form>
+            </div>
+        </div>
+
+        <!-- Results Table -->
+        <div class="results-section">
+            <h3>Результаты проверки:</h3>
+            <h:form id="results-form">
+                <h:dataTable id="results-table" value="#{resultsBean.results}" var="result"
+                             styleClass="results-table" headerClass="table-header">
+                    <h:column>
+                        <f:facet name="header">X</f:facet>
+                        #{result.x}
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Y</f:facet>
+                        #{result.y}
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">R</f:facet>
+                        #{result.r}
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Результат</f:facet>
+                        <span style="color: #{result.result ? 'green' : 'red'}">
+                            #{result.result ? 'Попадание' : 'Промах'}
+                        </span>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Время</f:facet>
+                        #{result.timestamp}
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">Время выполнения (мкс)</f:facet>
+                        #{result.executionTime}
+                    </h:column>
+                </h:dataTable>
+
+                <h:commandButton value="Очистить результаты" action="#{resultsBean.clearResults}">
+                    <f:ajax render="results-table"/>
+                </h:commandButton>
+            </h:form>
+        </div>
+    </div>
+</h:body>
+</html>
