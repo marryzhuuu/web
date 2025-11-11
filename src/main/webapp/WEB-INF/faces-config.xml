@@ -23,5 +23,27 @@
 
     <application>
         <message-bundle>messages</message-bundle>
+        <locale-config>
+            <default-locale>en</default-locale>
+            <supported-locale>en</supported-locale>
+            <supported-locale>ru</supported-locale>
+        </locale-config>
     </application>
+
+    <!-- Явная регистрация бинов для Gretty Tomcat (в tomcat нет CDI по умолчанию) -->
+    <managed-bean>
+        <managed-bean-name>testBean</managed-bean-name>
+        <managed-bean-class>bean.TestBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>areaCheckBean</managed-bean-name>
+        <managed-bean-class>bean.AreaCheckBean</managed-bean-class>
+        <managed-bean-scope>application</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>resultsBean</managed-bean-name>
+        <managed-bean-class>bean.ResultsBean</managed-bean-class>
+        <managed-bean-scope>application</managed-bean-scope>
+    </managed-bean>
 </faces-config>

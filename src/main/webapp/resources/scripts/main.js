@@ -1,33 +1,200 @@
-function handleCanvasClick(event) {
-    const canvas = document.getElementById('area-canvas');
-    const rect = canvas.getBoundingClientRect();
-
-    // Convert click coordinates to graph coordinates
-    const x = ((event.clientX - rect.left) - 150) / 30; // 150 is center, 30 is scale
-    const y = (150 - (event.clientY - rect.top)) / 30;
-
-    // Send coordinates to server
-    document.getElementById('hidden-x').value = x.toFixed(2);
-    document.getElementById('hidden-y').value = y.toFixed(2);
-    document.getElementById('graph-form:graph-check').click();
+function isValidFloat(str) {
+    return /^-?\d*\.?\d+$/.test(str.trim());
 }
 
-function drawGraph() {
-    const canvas = document.getElementById('area-canvas');
-    const ctx = canvas.getContext('2d');
-    const r = #{areaCheckBean.r};
 
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Draw coordinate system
-    drawCoordinateSystem(ctx);
+function isRSelected() {
+    const inputR = document.getElementById('input-form:r');
+    if (isValidFloat(inputR.value)) {
+        return true;
+    }
+    return false;
+}
 
-    // Draw area based on R
-    drawArea(ctx, r);
+function selectedR() {
+    const inputR = document.getElementById('input-form:r');
+    return parseFloat(inputR.value).toFixed(2);
+}
 
-    // Draw points from results
-    drawPoints(ctx, r);
+function isRValid() {
+    if (!isRSelected()) return false;
+    const r = selectedR();
+    return r >= 1 && r <= 4;
+}
+
+function handleGraphClick(event) {
+    const inputR = document.getElementById('input-form:r');
+    const graphMessage = document.getElementById('graph-message');
+    const graph = document.getElementById('graph');
+
+    // Проверяем что выбран R
+    if (!isRValid()) {
+        graphMessage.textContent = 'Сначала выберите радиус R';
+        return;
+    }
+    graphMessage.textContent = '';
+    const r = selectedR();
+    const rect = graph.getBoundingClientRect();
+    const x = event.clientX - rect.left - 200;
+    const y = 200 - (event.clientY - rect.top);
+
+    // Масштабирование координат
+    const scale = 150 / r;
+    const realX = x / scale;
+    const realY = y / scale;
+
+   // Отправка координат на сервер
+    document.getElementById('graph-form:hidden-x').value = realX.toFixed(2);
+    document.getElementById('graph-form:hidden-y').value = realY.toFixed(2);
+    document.getElementById('graph-form:hidden-r').value = r;
+    document.getElementById('graph-form:graph-check').click();
+
+}
+
+// Обновление графика при изменении R
+
+document.addEventListener('DOMContentLoaded', function() {
+    setupRInputListener();
+});
+
+function updateGraph() {
+
+    const checked = isRValid();
+
+    let r = 1;
+    if (!checked) r = 1;
+    else r = selectedR();
+
+    const scale = 150 / r;
+
+    // Обновляем область
+    const area = document.getElementById('area');
+
+    area.setAttribute('d',
+        `
+         M 0,0 L ${-r/2 * scale},0 L ${-r/2 * scale},${r * scale} L 0,${r * scale} Z
+         M 0,0 L ${r/2 * scale},0 L 0,${r/2 * scale} Z
+         M 0,0 L 0,${-r/2 * scale} A ${r/2 * scale},${r/2 * scale} 0 0,1 ${r/2 * scale},0 L 0,0 Z
+         `
+    );
+
+    // Обновляем точки
+    updatePoints(checked, r);
+
+    // Обновляем засечки и подписи
+    updateGrid(r, scale, checked);
+}
+
+function  drawGrid() {
+    const gridGroup = document.getElementById('grid');
+
+    // Координаты для засечек и подписей
+    const tickLength = 5; // Длина засечек
+
+    const valueMappings = [
+      [-1, '-R'],
+      [-1/2, '-R/2'],
+      [1/2, 'R/2'],
+      [1, 'R']
+    ];
+
+    valueMappings.forEach(value => {
+        const scale = value[0];
+        const label = value[1];
+        // Ось X
+        const xTick = document.createElementNS("http://www.w3.org/2000/svg", 'line');
+        xTick.setAttribute('x1', 150 * scale);
+        xTick.setAttribute('y1', -tickLength);
+        xTick.setAttribute('x2', 150 * scale);
+        xTick.setAttribute('y2', tickLength);
+        xTick.setAttribute('stroke', 'black');
+        xTick.setAttribute('stroke-width', 1);
+        gridGroup.appendChild(xTick);
+
+        const xLabel = document.createElementNS("http://www.w3.org/2000/svg", 'text');
+        xLabel.setAttribute('x', 150 * scale - 5);
+        xLabel.setAttribute('y', -10); // выше оси X
+        xLabel.setAttribute('font-size', 12);
+        xLabel.textContent = label;
+        gridGroup.appendChild(xLabel);
+
+        // ось Y
+        const yTick = document.createElementNS("http://www.w3.org/2000/svg", 'line');
+        yTick.setAttribute('x1', -tickLength);
+        yTick.setAttribute('y1', -150 * scale);
+        yTick.setAttribute('x2', tickLength);
+        yTick.setAttribute('y2', -150 * scale);
+        yTick.setAttribute('stroke', 'black');
+        yTick.setAttribute('stroke-width', 1);
+        gridGroup.appendChild(yTick);
+
+        const yLabel = document.createElementNS("http://www.w3.org/2000/svg", 'text');
+        yLabel.setAttribute('x', 10); // справа от оси Y
+        yLabel.setAttribute('y', -150 * scale + 5);
+        yLabel.setAttribute('font-size', 12);
+        yLabel.textContent = label;
+        gridGroup.appendChild(yLabel);
+    });
+}
+
+function updateGrid(r, scale, checked) {
+    const gridGroup = document.getElementById('grid');
+
+    // Очищаем предыдущие засечки и подписи
+    while (gridGroup.firstChild) {
+        gridGroup.removeChild(gridGroup.firstChild);
+    }
+    if (!checked) {
+        drawGrid();
+        return;
+    }
+
+    // Координаты для засечек и подписей
+    const tickLength = 5; // Длина засечек
+
+    const values = [-r, -r / 2, r / 2, r];
+
+    values.forEach(value => {
+        const scaledValue = value * scale;
+        // Ось X
+        if (value !== 0) {
+            const xTick = document.createElementNS("http://www.w3.org/2000/svg", 'line');
+            xTick.setAttribute('x1', scaledValue);
+            xTick.setAttribute('y1', -tickLength);
+            xTick.setAttribute('x2', scaledValue);
+            xTick.setAttribute('y2', tickLength);
+            xTick.setAttribute('stroke', 'black');
+            xTick.setAttribute('stroke-width', 1);
+            gridGroup.appendChild(xTick);
+
+            const xLabel = document.createElementNS("http://www.w3.org/2000/svg", 'text');
+            xLabel.setAttribute('x', scaledValue - 5);
+            xLabel.setAttribute('y', -10); // выше оси X
+            xLabel.setAttribute('font-size', 12);
+            xLabel.textContent = value.toString();
+            gridGroup.appendChild(xLabel);
+        }
+
+        // ось Y
+        if (value !== 0) {
+            const yTick = document.createElementNS("http://www.w3.org/2000/svg", 'line');
+            yTick.setAttribute('x1', -tickLength);
+            yTick.setAttribute('y1', -scaledValue);
+            yTick.setAttribute('x2', tickLength);
+            yTick.setAttribute('y2', -scaledValue);
+            yTick.setAttribute('stroke', 'black');
+            yTick.setAttribute('stroke-width', 1);
+            gridGroup.appendChild(yTick);
+
+            const yLabel = document.createElementNS("http://www.w3.org/2000/svg", 'text');
+            yLabel.setAttribute('x', 10); // справа от оси Y
+            yLabel.setAttribute('y', -scaledValue + 5);
+            yLabel.setAttribute('font-size', 12);
+            yLabel.textContent = value.toString();
+            gridGroup.appendChild(yLabel);
+        }
+    });
 }
 
 function drawCoordinateSystem(ctx) {
@@ -91,56 +258,112 @@ function drawTicks(ctx, centerX, centerY) {
     ctx.fillText('Y', 160, 10);
 }
 
-function drawArea(ctx, r) {
-    const centerX = 150, centerY = 150;
-    const scale = 30;
+function updatePoints(checked, r) {
+    const pointsGroup = document.getElementById('points');
+    pointsGroup.innerHTML = ''; // Clear existing points
+    const resultsTable = document.getElementById('results-table');
 
-    ctx.fillStyle = 'rgba(0, 100, 255, 0.5)';
-    ctx.strokeStyle = 'blue';
-    ctx.lineWidth = 1;
+    if (!checked) return;
 
-    // Rectangle (first quadrant)
-    ctx.beginPath();
-    ctx.rect(centerX, centerY - (r * scale / 2), r * scale, r * scale / 2);
-    ctx.fill();
-    ctx.stroke();
+    if (!window.graphData.points.length) return;
 
-    // Triangle (second quadrant)
-    ctx.beginPath();
-    ctx.moveTo(centerX, centerY);
-    ctx.lineTo(centerX - r * scale, centerY);
-    ctx.lineTo(centerX, centerY - r * scale);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+    const data = window.graphData.points;
 
-    // Quarter circle (fourth quadrant)
-    ctx.beginPath();
-    ctx.moveTo(centerX, centerY);
-    ctx.arc(centerX, centerY, r * scale, 0, Math.PI / 2, false);
-    ctx.lineTo(centerX, centerY);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-}
+    data.forEach(point => {
+        const scale = 150 / r;
+        const scaledX = point.x * scale;
+        const scaledY = -point.y * scale;
 
-function drawPoints(ctx, r) {
-    const centerX = 150, centerY = 150;
-    const scale = 30;
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+        circle.setAttribute('cx', scaledX);
+        circle.setAttribute('cy', scaledY);
+        circle.setAttribute('r', 3);
+        circle.setAttribute('fill', point.result ? 'green' : 'red');
 
-    // Get results from the table (simplified approach)
-    const results = #{resultsBean.results};
-
-    results.forEach(result => {
-        const x = centerX + result.x * scale;
-        const y = centerY - result.y * scale;
-
-        ctx.fillStyle = result.result ? 'green' : 'red';
-        ctx.beginPath();
-        ctx.arc(x, y, 3, 0, 2 * Math.PI);
-        ctx.fill();
+        pointsGroup.appendChild(circle);
     });
 }
 
-// Redraw graph when page loads and when R changes
-document.addEventListener('DOMContentLoaded', drawGraph);
+function updateGraphDataAfterPointAdded() {
+
+    // Получаем актуальные данные из таблицы
+    const points = getPointsFromTable();
+    window.graphData.points = points;
+
+    // Обновляем график
+    const r = selectedR();
+    updatePoints(true, r);
+
+    // ПЕРЕУСТАНАВЛИВАЕМ event listeners после обновления DOM
+    setTimeout(setupRInputListener, 50);
+}
+
+function setupRInputListener() {
+    const rInput = document.getElementById('input-form:r');
+    if (rInput) {
+        // Удаляем старые listeners (на всякий случай)
+        rInput.removeEventListener('input', handleRInput);
+
+        // Добавляем новый listener
+        rInput.addEventListener('input', handleRInput);
+    }
+}
+
+function handleRInput(event) {
+    let changeTimeout;
+    clearTimeout(changeTimeout);
+    changeTimeout = setTimeout(() => {
+        updateGraphDataForNewR();
+    }, 500);
+}
+function getPointsFromTable() {
+    const resultsTable = document.getElementById('results-table');
+    if (!resultsTable) return [];
+
+    const rows = resultsTable.querySelectorAll('tbody tr');
+    const points = [];
+
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length >= 4) {
+            try {
+                const x = parseFloat(cells[0].textContent.trim());
+                const y = parseFloat(cells[1].textContent.trim());
+                const r = parseFloat(cells[2].textContent.trim());
+                const resultText = cells[3].textContent.trim();
+                const result = resultText.includes('Попадание');
+
+                points.push({ x, y, r, result });
+            } catch (e) {
+                console.error('Error parsing table row:', e);
+            }
+        }
+    });
+
+    return points;
+}
+
+function updateGraphDataForNewR() {
+    const r = selectedR();
+    if (isRValid()) {
+        // Используем PrimeFaces для обновления graph-data-container
+        if (window.PrimeFaces) {
+            // Находим форму и обновляем компонент
+            const form = document.getElementById('input-form');
+            if (form) {
+                PrimeFaces.ab({
+                    source: 'input-form:r',
+                    process: '@this',
+                    update: 'graph-data-container',
+                    oncomplete: function() {
+                        updateGraph();
+                    }
+                });
+            }
+        } else {
+            // Fallback: обновляем из таблицы
+            updateGraphDataFromTable();
+            updateGraph();
+        }
+    }
+}

@@ -185,12 +185,58 @@ input[type="button"]:hover, input[type="submit"]:hover, .commandButton:hover {
     background: #0056b3;
 }
 
-/* Error messages */
-.ui-messages-error {
-    color: #dc3545;
-    background: #f8d7da;
-    border: 1px solid #f5c6cb;
-    padding: 10px;
+/* Стили для сообщений об ошибках */
+.error-message {
+    display: block;
+    margin-top: 5px;
+}
+
+.error-text {
+    color: #d9534f;
+    font-size: 0.9em;
+    font-weight: bold;
+    padding: 5px;
+    border: 1px solid #d9534f;
     border-radius: 4px;
+    background-color: #f2dede;
+}
+
+.messages-panel {
+    width: 100%;
     margin: 10px 0;
+}
+
+.global-errors {
+    color: #d9534f;
+    font-weight: bold;
+    padding: 10px;
+    margin: 10px 0;
+    border: 2px solid #d9534f;
+    border-radius: 4px;
+    background-color: #f2dede;
+}
+
+.info-message {
+    color: #31708f;
+    background-color: #d9edf7;
+    border: 1px solid #bce8f1;
+}
+
+.warn-message {
+    color: #8a6d3b;
+    background-color: #fcf8e3;
+    border: 1px solid #faebcc;
+}
+
+.x-buttons-container {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.x-buttons-container .ui-button {
+    flex: 1 1 auto;
+    border-width: 1px !important;
+    border-radius: 4px !important;
 }

@@ -2,18 +2,22 @@
 <html lang="ru" xmlns="http://www.w.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
 <h:head>
     <title>Web Lab 3 - Main Page</title>
     <h:outputStylesheet library="styles" name="style.css"/>
     <h:outputScript library="scripts" name="main.js" target="head"/>
 </h:head>
-<h:body onload="drawGraph()">
+<h:body onload="updateGraph()">
     <div class="container">
         <div class="header">
             <h1>Лабораторная работа #3</h1>
             <h:link outcome="index" value="← Назад к стартовой странице" styleClass="back-link"/>
         </div>
+
+<!--        <p:growl id="messages" showDetail="true" life="3000"/>-->
+<!--        <p:remoteCommand name="globalRefreshPoints" oncomplete="updateGraph()"/>-->
 
         <div class="content">
             <!-- Input Form -->
@@ -23,7 +27,8 @@
 
                     <div class="form-group">
                         <label>Координата X:</label>
-                        <h:selectOneMenu id="x" value="#{areaCheckBean.x}" validator="coordinatesValidator">
+                        <p:selectOneButton id="x" class="x-buttons-container" value="#{areaCheckBean.x}">
+                            <f:validator validatorId="coordinatesValidator"/>
                             <f:selectItem itemValue="-3" itemLabel="-3"/>
                             <f:selectItem itemValue="-2" itemLabel="-2"/>
                             <f:selectItem itemValue="-1" itemLabel="-1"/>
@@ -33,27 +38,39 @@
                             <f:selectItem itemValue="3" itemLabel="3"/>
                             <f:selectItem itemValue="4" itemLabel="4"/>
                             <f:selectItem itemValue="5" itemLabel="5"/>
-                        </h:selectOneMenu>
-                    </div>
-
+                        </p:selectOneButton>
+                        <p:message for="x" display="text"/>                    </div>
                     <div class="form-group">
                         <label>Координата Y:</label>
-                        <h:inputText id="y" value="#{areaCheckBean.y}" validator="coordinatesValidator">
-                            <f:validateDoubleRange minimum="-3" maximum="5"/>
-                        </h:inputText>
+                        <p:inputText id="y" value="#{areaCheckBean.y}">
+                            <f:converter converterId="doubleConverter"/>
+                            <f:validator validatorId="coordinatesValidator"/>
+                        </p:inputText>
+                        <p:message for="y" display="text"/>
                     </div>
 
                     <div class="form-group">
                         <label>Радиус R:</label>
-                        <h:inputText id="r" value="#{areaCheckBean.r}" validator="coordinatesValidator">
-                            <f:validateDoubleRange minimum="1" maximum="4"/>
-                            <f:ajax event="valueChange" render="area-canvas results-table"/>
-                        </h:inputText>
+                        <p:inputText id="r" value="#{areaCheckBean.r}">
+                            <f:converter converterId="doubleConverter"/>
+                            <f:validator validatorId="coordinatesValidator"/>
+                            <p:ajax event="keyup"
+                                    process="@this"
+                                    update="graph-data-container"
+                                    oncomplete="updateGraph()"
+                                    delay="300"/>
+                        </p:inputText>
+                        <p:message for="r" display="text"/>
                     </div>
 
-                    <h:commandButton value="Проверить" action="#{areaCheckBean.checkPoint}">
-                        <f:ajax execute="input-form" render="results-table area-canvas"/>
-                    </h:commandButton>
+                    <p:commandButton value="Проверить" action="#{areaCheckBean.checkPoint}"
+                                     update="results-table">
+                        <p:ajax event="click"
+                                process="@this"
+                                update="graph-data-container"
+                                oncomplete="updateGraph()"
+                                delay="100"/>
+                    </p:commandButton>
                 </h:form>
             </div>
 
@@ -61,57 +78,82 @@
             <div class="graph-section">
                 <h:form id="graph-form">
                     <h3>Область проверки:</h3>
-                    <canvas id="area-canvas" width="300" height="300" onclick="handleCanvasClick(event)"></canvas>
+                    <svg id="graph" width="400" height="400"  viewBox="-200 -200 400 400" onclick="handleGraphClick(event)">
+                        <!-- Координатные оси -->
+                        <line x1="-200" y1="0" x2="200" y2="0" stroke="black" stroke-width="2"/>
+                        <line x1="0" y1="-200" x2="0" y2="200" stroke="black" stroke-width="2"/>
+
+                        <!-- Подписи осей -->
+                        <text x="190" y="-10" font-size="12">X</text>
+                        <text x="5" y="-190" font-size="12">Y</text>
+
+                        <!-- Область -->
+                        <path id="area" fill="lightblue" fill-opacity="0.5" stroke="blue"/>
+
+                        <!-- Сетка и разметка -->
+                        <g id="grid"> </g>
+
+                        <!-- Точки результатов -->
+                        <g id="points"> </g>
+                    </svg>
+                    <p id="graph-message"> </p>
 
                     <h:inputHidden id="hidden-x" value="#{areaCheckBean.x}"/>
                     <h:inputHidden id="hidden-y" value="#{areaCheckBean.y}"/>
-                    <h:commandButton id="graph-check" value="Check from Graph" style="display:none"
-                                     action="#{areaCheckBean.checkPoint}">
-                        <f:ajax execute="graph-form" render="results-table area-canvas"/>
-                    </h:commandButton>
+                    <h:inputHidden id="hidden-r" value="#{areaCheckBean.r}"/>
+                    <p:commandButton id="graph-check" value="Check from Graph" style="display:none"
+                                     action="#{areaCheckBean.checkPoint}"
+                                     update="results-table">
+                        <p:ajax event="click"
+                                process="@this"
+                                update="graph-data-container"
+                                oncomplete="updateGraph()"
+                                delay="100"/>
+                    </p:commandButton>
                 </h:form>
             </div>
         </div>
 
-        <!-- Results Table -->
         <div class="results-section">
             <h3>Результаты проверки:</h3>
-            <h:form id="results-form">
-                <h:dataTable id="results-table" value="#{resultsBean.results}" var="result"
-                             styleClass="results-table" headerClass="table-header">
-                    <h:column>
-                        <f:facet name="header">X</f:facet>
-                        #{result.x}
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">Y</f:facet>
-                        #{result.y}
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">R</f:facet>
-                        #{result.r}
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">Результат</f:facet>
-                        <span style="color: #{result.result ? 'green' : 'red'}">
-                            #{result.result ? 'Попадание' : 'Промах'}
-                        </span>
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">Время</f:facet>
-                        #{result.timestamp}
-                    </h:column>
-                    <h:column>
-                        <f:facet name="header">Время выполнения (мкс)</f:facet>
-                        #{result.executionTime}
-                    </h:column>
-                </h:dataTable>
+            <p:dataTable id="results-table" value="#{resultsBean.results}" var="result"
+                         styleClass="results-table" headerClass="table-header">
+                <p:column headerText="X">#{result.x}</p:column>
+                <p:column headerText="Y">#{result.y}</p:column>
+                <p:column headerText="R">#{result.r}</p:column>
+                <p:column headerText="Результат">
+                    <span style="color: #{result.result ? 'green' : 'red'}">
+                        #{result.result ? 'Попадание' : 'Промах'}
+                    </span>
+                </p:column>
+                <p:column headerText="Время">#{result.timestamp}</p:column>
+                <p:column headerText="Время выполнения (мкс)">#{result.executionTime}</p:column>
+            </p:dataTable>
 
-                <h:commandButton value="Очистить результаты" action="#{resultsBean.clearResults}">
-                    <f:ajax render="results-table"/>
-                </h:commandButton>
+            <!-- Кнопка очистки в отдельной форме -->
+            <h:form>
+                <p:commandButton value="Очистить результаты" action="#{resultsBean.clearResults}"
+                                 update="results-table"
+                                 oncomplete="updateGraphDataAfterPointAdded()"/>
             </h:form>
         </div>
     </div>
+    <h:panelGroup id="graph-data-container">
+        <h:outputScript>
+            window.graphData = {
+            currentR: #{areaCheckBean.r},
+            points: [
+            <ui:repeat value="#{resultsBean.getUpdatedResults(areaCheckBean.r)}" var="point">
+                {
+                x: #{point.x},
+                y: #{point.y},
+                r: #{point.r},
+                result: #{point.result}
+                },
+            </ui:repeat>
+            ]
+            };
+        </h:outputScript>
+    </h:panelGroup>
 </h:body>
 </html>

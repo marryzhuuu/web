@@ -14,6 +14,16 @@ public class CoordinatesValidator implements Validator<Double> {
     public void validate(FacesContext context, UIComponent component, Double value) throws ValidatorException {
         String componentId = component.getId();
 
+        // Проверка на null (если конвертер пропустил пустое значение)
+        if (value == null) {
+            String fieldName = getFieldName(componentId);
+            throw new ValidatorException(new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Ошибка валидации",
+                    fieldName + " является обязательным полем"
+            ));
+        }
+
         if ("x".equals(componentId)) {
             validateX(value);
         } else if ("y".equals(componentId)) {
@@ -24,29 +34,43 @@ public class CoordinatesValidator implements Validator<Double> {
     }
 
     private void validateX(Double x) {
-        if (x == null) {
-            throw new ValidatorException(new FacesMessage("X coordinate is required"));
-        }
         if (x < -3 || x > 5) {
-            throw new ValidatorException(new FacesMessage("X must be between -3 and 5"));
+            throw new ValidatorException(new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Ошибка валидации X",
+                    "Координата X должна быть в диапазоне от -3 до 5"
+            ));
         }
     }
 
     private void validateY(Double y) {
-        if (y == null) {
-            throw new ValidatorException(new FacesMessage("Y coordinate is required"));
-        }
         if (y < -3 || y > 5) {
-            throw new ValidatorException(new FacesMessage("Y must be between -3 and 5"));
+            throw new ValidatorException(new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Ошибка валидации Y",
+                    "Координата Y должна быть в диапазоне от -3 до 5"
+            ));
         }
     }
 
     private void validateR(Double r) {
-        if (r == null) {
-            throw new ValidatorException(new FacesMessage("Radius is required"));
-        }
         if (r < 1 || r > 4) {
-            throw new ValidatorException(new FacesMessage("R must be between 1 and 4"));
+            throw new ValidatorException(new FacesMessage(
+                    FacesMessage.SEVERITY_ERROR,
+                    "Ошибка валидации R",
+                    "Радиус R должен быть в диапазоне от 1 до 4"
+            ));
         }
+    }
+
+    private String getFieldName(String componentId) {
+        if ("x".equals(componentId)) {
+            return "Координата X";
+        } else if ("y".equals(componentId)) {
+            return "Координата Y";
+        } else if ("r".equals(componentId)) {
+            return "Радиус R";
+        }
+        return "Поле";
     }
 }

@@ -18,6 +18,8 @@ dependencies {
     implementation 'com.oracle.database.jdbc:ojdbc11:21.9.0.0'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
 
+    implementation 'org.primefaces:primefaces:13.0.0:jakarta'
+
     providedCompile 'jakarta.servlet:jakarta.servlet-api:5.0.0'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'

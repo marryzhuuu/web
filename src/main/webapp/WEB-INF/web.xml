@@ -3,10 +3,16 @@
          xmlns="https://jakarta.ee/xml/ns/jakartaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
-         https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd">
+                             https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd">
 
-    <display-name>Web Lab 2</display-name>
+    <display-name>Web Application</display-name>
 
+    <!-- CDI Listener для Tomcat -->
+<!--    <listener>-->
+<!--        <listener-class>org.jboss.weld.environment.servlet.Listener</listener-class>-->
+<!--    </listener>-->
+
+    <!-- JSF Servlet -->
     <servlet>
         <servlet-name>Faces Servlet</servlet-name>
         <servlet-class>jakarta.faces.webapp.FacesServlet</servlet-class>
