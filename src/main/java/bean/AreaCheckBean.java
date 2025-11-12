@@ -53,6 +53,7 @@ public class AreaCheckBean implements Serializable {
             databaseService = new DatabaseService();
             resultsBean = getManagedBean("resultsBean");
             resultsBean.setDatabaseService(databaseService);
+            resultsBean.updateResults();
         } catch (Exception e) {
             System.err.println("Error initializing ResultsBean: " + e.getMessage());
             e.printStackTrace();
