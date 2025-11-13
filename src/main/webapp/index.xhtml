@@ -29,36 +29,6 @@
             <h:link outcome="main" value="Перейти к приложению →" styleClass="nav-link"/>
         </div>
 
-        <h:form id="testForm">
-            <div class="test-container">
-                <h3>Тестирование управляемого бина</h3>
-
-                <!-- Текстовое поле -->
-                <h:outputLabel for="textField" value="Текстовое поле: " />
-                <h:inputText id="textField" value="#{testBean.textValue}" />
-
-                <!-- Числовое поле -->
-                <h:outputLabel for="numberField" value="Числовое поле: " />
-                <h:inputText id="numberField" value="#{testBean.numberValue}" />
-
-                <!-- Выпадающий список -->
-                <h:outputLabel for="dropdown" value="Выбор: " />
-                <h:selectOneMenu id="dropdown" value="#{testBean.selectedOption}">
-                    <f:selectItem itemValue="option1" itemLabel="Опция 1" />
-                    <f:selectItem itemValue="option2" itemLabel="Опция 2" />
-                    <f:selectItem itemValue="option3" itemLabel="Опция 3" />
-                </h:selectOneMenu>
-
-                <!-- Кнопки действий -->
-                <h:commandButton value="Сохранить" action="#{testBean.saveData()}" styleClass="mybutton" />
-                <h:commandButton value="Показать данные" action="#{testBean.showData()}" styleClass="mybutton" />
-                <h:commandButton value="Очистить" action="#{testBean.clearData()}" styleClass="mybutton" />
-
-                <!-- Отображение результата -->
-                <h:outputText value="#{testBean.resultMessage}" style="display: block; margin-top: 10px; font-weight: bold;" />
-            </div>
-        </h:form>
-
     </div>
 </h:body>
 </html>
