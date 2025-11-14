@@ -36,14 +36,15 @@
                             <f:selectItem itemValue="4" itemLabel="4"/>
                             <f:selectItem itemValue="5" itemLabel="5"/>
                         </p:selectOneButton>
-                        <p:message for="x" display="text"/>                    </div>
+                        <p:message for="x" display="text" class="error-message"/>
+                    </div>
                     <div class="form-group">
                         <label>Координата Y:</label>
                         <p:inputText id="y" value="#{areaCheckBean.y}">
                             <f:converter converterId="doubleConverter"/>
                             <f:validator validatorId="coordinatesValidator"/>
                         </p:inputText>
-                        <p:message for="y" display="text"/>
+                        <p:message for="y" display="text" class="error-message"/>
                     </div>
 
                     <div class="form-group">
@@ -57,11 +58,11 @@
                                     oncomplete="updateGraph()"
                                     delay="300"/>
                         </p:inputText>
-                        <p:message for="r" display="text"/>
+                        <p:message for="r" display="text" class="error-message"/>
                     </div>
 
                     <p:commandButton value="Проверить" action="#{areaCheckBean.checkPoint}"
-                                     update="results-table">
+                                     update="results-table input-form">
                         <p:ajax event="click"
                                 process="@this"
                                 update="graph-data-container"
@@ -93,7 +94,7 @@
                         <!-- Точки результатов -->
                         <g id="points"> </g>
                     </svg>
-                    <p id="graph-message"> </p>
+                    <p id="graph-message" class="error-message"> </p>
 
                     <h:inputHidden id="hidden-x" value="#{areaCheckBean.x}"/>
                     <h:inputHidden id="hidden-y" value="#{areaCheckBean.y}"/>

@@ -187,18 +187,9 @@ input[type="button"]:hover, input[type="submit"]:hover, .commandButton:hover {
 
 /* Стили для сообщений об ошибках */
 .error-message {
-    display: block;
-    margin-top: 5px;
-}
-
-.error-text {
-    color: #d9534f;
-    font-size: 0.9em;
-    font-weight: bold;
-    padding: 5px;
-    border: 1px solid #d9534f;
-    border-radius: 4px;
-    background-color: #f2dede;
+    border: 0 !important;
+    background: white !important;
+    color: red !important;
 }
 
 .messages-panel {
