@@ -4,9 +4,6 @@ import entity.Result;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
-
-import javax.naming.InitialContext;
-import javax.sql.DataSource;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -15,8 +12,10 @@ import java.util.List;
 @ApplicationScoped
 public class DatabaseService {
 
-    // Используем JNDI для получения DataSource
-    private static final String DATASOURCE_JNDI = "java:jboss/datasources/PostgreSQLDS";
+    // Обновленные настройки для PostgreSQL
+    private static final String URL = "jdbc:postgresql://localhost:38177/s381731";
+    private static final String USER = "s381731";
+    private static final String PASSWORD = "s381731";
 
     // Обновленные SQL запросы для PostgreSQL
     private static final String CREATE_SEQUENCE_SQL = """
@@ -44,27 +43,35 @@ public class DatabaseService {
     private static final String CLEAR_SQL = "DELETE FROM point_results";
 
     private Connection connection;
-    private DataSource dataSource;
 
     public DatabaseService() {
         try {
-            // Получаем DataSource через JNDI
-            InitialContext ctx = new InitialContext();
-            dataSource = (DataSource) ctx.lookup(DATASOURCE_JNDI);
-
-            connection = dataSource.getConnection();
+            // PostgreSQL драйвер автоматически загружается через Service Provider Interface
+            connection = DriverManager.getConnection(URL, USER, PASSWORD);
             createTableIfNotExists();
-            System.out.println("PostgreSQL database connection established via WildFly DataSource");
+            System.out.println("PostgreSQL database connection established");
         } catch (Exception e) {
             System.err.printf("Failed to initialize database connection: %s%n", e);
-            e.printStackTrace();
         }
     }
 
-    // Остальные методы остаются без изменений...
+    @PreDestroy
+    public void cleanup() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+                System.out.println("Database connection closed");
+            }
+        } catch (SQLException e) {
+            System.err.println("Error closing database connection: " + e.getMessage());
+        }
+    }
+
     private void createTableIfNotExists() {
         try (Statement stmt = connection.createStatement()) {
+            // Создаем последовательность
             stmt.execute(CREATE_SEQUENCE_SQL);
+            // Создаем таблицу
             stmt.execute(CREATE_TABLE_SQL);
             System.out.println("Table and sequence created successfully");
         } catch (SQLException e) {
@@ -77,14 +84,13 @@ public class DatabaseService {
             stmt.setDouble(1, result.getX());
             stmt.setDouble(2, result.getY());
             stmt.setDouble(3, result.getR());
-            stmt.setBoolean(4, result.isResult());
+            stmt.setBoolean(4, result.isResult()); // Используем boolean для PostgreSQL
             stmt.setTimestamp(5, Timestamp.valueOf(result.getTimestamp()));
             stmt.setLong(6, result.getExecutionTime());
 
             stmt.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Failed to save point result: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -99,14 +105,13 @@ public class DatabaseService {
                 result.setX(rs.getDouble("x"));
                 result.setY(rs.getDouble("y"));
                 result.setR(rs.getDouble("r"));
-                result.setResult(rs.getBoolean("result"));
+                result.setResult(rs.getBoolean("result")); // Используем getBoolean для PostgreSQL
                 result.setTimestamp(rs.getTimestamp("timestamp").toLocalDateTime());
                 result.setExecutionTime(rs.getLong("execution_time"));
                 results.add(result);
             }
         } catch (SQLException e) {
             System.err.println("Failed to retrieve point results: " + e.getMessage());
-            e.printStackTrace();
         }
         return results;
     }
@@ -116,19 +121,6 @@ public class DatabaseService {
             stmt.executeUpdate();
         } catch (SQLException e) {
             System.err.println("Failed to clear results: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    @PreDestroy
-    public void cleanup() {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
-                System.out.println("Database connection closed");
-            }
-        } catch (SQLException e) {
-            System.err.println("Error closing database connection: " + e.getMessage());
         }
     }
 }
