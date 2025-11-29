@@ -3,6 +3,7 @@ package service;
 import entity.Result;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import jakarta.inject.Named;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import javax.naming.InitialContext;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Named("databaseService")
 @ApplicationScoped
 public class DatabaseService {
 
@@ -46,7 +48,8 @@ public class DatabaseService {
     private Connection connection;
     private DataSource dataSource;
 
-    public DatabaseService() {
+    @PostConstruct
+    public void init() {
         try {
             // Получаем DataSource через JNDI
             InitialContext ctx = new InitialContext();

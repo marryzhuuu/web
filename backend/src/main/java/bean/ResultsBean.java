@@ -20,6 +20,8 @@ public class ResultsBean implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private List<Result> results;
+
+    @Inject
     private DatabaseService databaseService;
 
     @PostConstruct

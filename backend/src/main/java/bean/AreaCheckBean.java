@@ -3,7 +3,6 @@ package bean;
 import entity.Result;
 import jakarta.annotation.PostConstruct;
 import jakarta.el.ELResolver;
-import jakarta.enterprise.context.ApplicationScoped;
 import service.DatabaseService;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Inject;
@@ -22,7 +21,7 @@ import jakarta.el.ValueExpression;
 
 
 @Named("areaCheckBean")
-@ApplicationScoped
+@SessionScoped
 public class AreaCheckBean implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -50,7 +49,7 @@ public class AreaCheckBean implements Serializable {
     public void init() {
         try {
             // Инициализируем сервис вручную, так как @Inject не работает в Tomcat под Gretty
-            databaseService = new DatabaseService();
+            databaseService = getManagedBean("databaseService");
             resultsBean = getManagedBean("resultsBean");
             resultsBean.setDatabaseService(databaseService);
             resultsBean.updateResults();
@@ -58,9 +57,8 @@ public class AreaCheckBean implements Serializable {
             System.err.println("Error initializing ResultsBean: " + e.getMessage());
             e.printStackTrace();
             // Инициализируем пустой список в случае ошибки
-            databaseService = new DatabaseService(); // Все равно создаем, но может быть нерабочим
-            resultsBean = new ResultsBean();
-            resultsBean.setDatabaseService(databaseService);
+            databaseService = getManagedBean("databaseService");
+            resultsBean = getManagedBean("resultsBean");
         }
     }
 
