@@ -20,7 +20,6 @@ public class TestResource {
         try {
             Map<String, String> response = new HashMap<>();
 
-            // Текущее время
             String currentTime = LocalDateTime.now()
                     .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
@@ -28,7 +27,6 @@ public class TestResource {
             response.put("testString", "Это тестовая строка из REST API");
             response.put("status", "success");
 
-            // Конвертируем в JSON
             Jsonb jsonb = JsonbBuilder.create();
             return jsonb.toJson(response);
 
