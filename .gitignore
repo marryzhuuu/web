@@ -1,17 +1,27 @@
 .gradle
 build/
+gradle/
 !backend/gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+/backend/bin
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
+.idea/misc.xml
+.idea/vcs.xml
+.idea/workspace.xml
 .idea/jarRepositories.xml
 .idea/compiler.xml
 .idea/libraries/
+.idea/inspectionProfiles
 *.iws
 *.iml
 *.ipr
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+
+# Frontend
+frontend/node_modules
+frontend/dist
