@@ -1,29 +1,78 @@
 plugins {
     id 'java'
     id 'war'
-    id 'org.gretty' version '4.1.0'
+//    id 'org.gretty' version '4.1.0'
 }
 
 version = '1.0.0'
-sourceCompatibility = '15'
-targetCompatibility = '15'
+sourceCompatibility = '17'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation 'jakarta.platform:jakarta.jakartaee-api:9.1.0'
-    implementation 'org.glassfish:jakarta.faces:3.0.3'
-    implementation 'org.postgresql:postgresql:42.6.0'
+//    implementation 'jakarta.platform:jakarta.jakartaee-api:9.1.0'
+//    implementation 'org.glassfish:jakarta.faces:3.0.3'
+//    implementation 'org.postgresql:postgresql:42.6.0'
+//    implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
+//
+//    implementation 'org.primefaces:primefaces:13.0.0:jakarta'
+//
+//    providedCompile 'jakarta.servlet:jakarta.servlet-api:5.0.0'
+//
+//    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
+//    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
+
+
+
+//    // Jakarta Servlet API
+//    implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
+//
+//    // Jakarta REST (JAX-RS) API
+//    implementation 'jakarta.ws.rs:jakarta.ws.rs-api:3.1.0'
+//
+//    // Jersey (реализация JAX-RS)
+//    implementation 'org.glassfish.jersey.containers:jersey-container-servlet:3.1.1'
+//    implementation 'org.glassfish.jersey.core:jersey-server:3.1.1'
+//    implementation 'org.glassfish.jersey.media:jersey-media-json-binding:3.1.1'
+//    implementation 'org.glassfish.jersey.inject:jersey-hk2:3.1.1'
+//
+//    // Для JSON обработки
+//    implementation 'org.glassfish:jakarta.json:2.0.1'
+
+
+
+    // Jakarta Servlet API
+    providedCompile 'jakarta.servlet:jakarta.servlet-api:6.0.0'
+
+    // Jakarta REST (JAX-RS) API - только API, реализация предоставляется WildFly
+    providedCompile 'jakarta.ws.rs:jakarta.ws.rs-api:3.1.0'
+
+    // Для JSON обработки
+    implementation 'org.glassfish:jakarta.json:2.0.1'
+
+    // Jackson для JSON (если нужно)
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.15.2'
 
-    implementation 'org.primefaces:primefaces:13.0.0:jakarta'
 
-    providedCompile 'jakarta.servlet:jakarta.servlet-api:5.0.0'
+    // Jakarta Servlet API
+    providedCompile 'jakarta.servlet:jakarta.servlet-api:6.0.0'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
+    // Jakarta REST (JAX-RS) API
+    providedCompile 'jakarta.ws.rs:jakarta.ws.rs-api:3.1.0'
+
+    // JSON-B API для компиляции
+    providedCompile 'jakarta.json.bind:jakarta.json.bind-api:3.0.0'
+
+    // JSON Processing API
+    providedCompile 'jakarta.json:jakarta.json-api:2.1.1'
+
+    // Для тестирования или если нужна реализация вне сервера приложений
+    implementation 'org.eclipse:yasson:3.0.3'
+    implementation 'org.glassfish:jakarta.json:2.0.1'
+
 }
 
 tasks.withType(JavaCompile) {
@@ -34,12 +83,12 @@ war {
     archiveFileName = 'web.war'
 }
 
-gretty {
-    httpPort = 8080
-    contextPath = '/'
-    servletContainer = 'tomcat10'
-    jvmArgs = ['-Xdebug', '-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005']
-
-    // Для избежания конфликтов портов
-    inplaceMode = 'hard'
-}
+//gretty {
+//    httpPort = 8080
+//    contextPath = '/'
+//    servletContainer = 'tomcat10'
+//    jvmArgs = ['-Xdebug', '-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005']
+//
+//    // Для избежания конфликтов портов
+//    inplaceMode = 'hard'
+//}
