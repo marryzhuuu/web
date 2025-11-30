@@ -51,11 +51,6 @@
       </div>
     </form>
 
-    <div v-if="isRegisterMode" class="register-info">
-      <p><strong>Для тестирования можно использовать:</strong></p>
-      <p>Логин: <code>admin</code> | Пароль: <code>admin123</code></p>
-      <p>Логин: <code>user</code> | Пароль: <code>user123</code></p>
-    </div>
   </div>
 </template>
 
