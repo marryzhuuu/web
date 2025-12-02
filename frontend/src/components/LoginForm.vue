@@ -1,6 +1,6 @@
 <template>
   <div class="login-form card">
-    <h2>Вход в систему</h2>
+    <h2>{{ isRegisterMode ? 'Регистрация' : 'Вход в систему' }}</h2>
 
     <form @submit.prevent="handleSubmit">
       <div class="form-group">

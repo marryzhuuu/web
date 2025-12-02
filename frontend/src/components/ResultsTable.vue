@@ -1,7 +1,7 @@
 <template>
   <div class="results-table card">
     <div class="table-header">
-      <h2>История проверок</h2>
+      <h2>Результаты проверки:</h2>
       <button
         class="btn btn-secondary btn-sm"
         @click="loadHistory"

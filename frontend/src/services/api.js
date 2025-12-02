@@ -25,7 +25,12 @@ export const authAPI = {
 
 export const pointsAPI = {
   checkPoint: (pointData) => api.post('/points/check', pointData),
-  getHistory: () => api.get('/points/history')
+  getHistory: (radius) => {
+    if(radius) {
+      return api.get(`/points/history?r=${radius}`)
+    }
+    return api.get('/points/history')
+  }
 }
 
 export default api

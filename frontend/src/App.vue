@@ -17,6 +17,17 @@ export default {
 }
 
 // Общие стили
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  min-height: 100vh;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -63,7 +74,7 @@ export default {
   }
 
   &-primary {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: $primary-gradient;
     color: white;
 
     &:hover:not(:disabled) {

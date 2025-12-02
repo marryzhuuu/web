@@ -19,6 +19,7 @@
           <PointChecker
             @point-checked="handlePointChecked"
             @radius-changed="handleRadiusChanged"
+            @clear-all="handleClearAll"
           />
         </div>
 
@@ -27,6 +28,7 @@
           <CoordinatePlot
             :radius="currentRadius"
             @point-selected="handlePointSelected"
+            @point-checked="handlePointChecked"
             ref="plot"
           />
           <ResultsTable ref="resultsTable" />
@@ -68,14 +70,19 @@ export default {
       }
     }
 
+    const handleClearAll = (pointData) => {
+      // Очищаем отображение при невыбранном радиусе
+      if (plot.value) {
+        currentRadius.value = null;
+        plot.value.clearPlot()
+      }
+    }
+
     const handleRadiusChanged = (radius) => {
       currentRadius.value = radius
     }
 
     const handlePointSelected = (point) => {
-      // Здесь можно передать координаты в PointChecker
-      // Для простоты выведем в консоль
-      console.log('Выбрана точка на графике:', point)
     }
 
     const logout = () => {
@@ -98,6 +105,7 @@ export default {
       handlePointChecked,
       handleRadiusChanged,
       handlePointSelected,
+      handleClearAll,
       logout
     }
   }
@@ -108,7 +116,7 @@ export default {
 .main-page {
   min-height: 100vh;
   padding: 20px 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: $primary-gradient;
 
   @include mobile {
     padding: 10px 0;

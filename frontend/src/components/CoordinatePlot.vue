@@ -1,15 +1,26 @@
 <template>
   <div class="coordinate-plot card">
-    <h2>Координатная плоскость</h2>
+    <h2>Область проверки:</h2>
 
     <div class="plot-container">
-      <canvas
-        ref="canvas"
-        :width="canvasSize"
-        :height="canvasSize"
-        @click="handleCanvasClick"
-        class="plot-canvas"
-      ></canvas>
+      <svg id="graph" width="400" height="400"  viewBox="-200 -200 400 400" @click="handleGraphClick">
+          <!-- Координатные оси -->
+          <line x1="-200" y1="0" x2="200" y2="0" stroke="black" stroke-width="2"/>
+          <line x1="0" y1="-200" x2="0" y2="200" stroke="black" stroke-width="2"/>
+
+          <!-- Подписи осей -->
+          <text x="190" y="-10" font-size="12">X</text>
+          <text x="5" y="-190" font-size="12">Y</text>
+
+          <!-- Область -->
+          <path id="area" fill="lightblue" fill-opacity="0.5" stroke="blue"/>
+
+          <!-- Сетка и разметка -->
+          <g id="grid"> </g>
+
+          <!-- Точки результатов -->
+          <g id="points"> </g>
+      </svg>
     </div>
 
     <div class="plot-info">
@@ -25,15 +36,16 @@
       </div>
 
       <div class="current-radius">
-        <strong>Текущий радиус:</strong> {{ currentRadius || 'не выбран' }}
+        <span  :class="{'miss': !currentRadius}"><strong>Текущий радиус:</strong> {{ currentRadius || 'не выбран' }}</span>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, onMounted, watch, nextTick } from 'vue'
+import {ref, onMounted, watch, nextTick, computed} from 'vue'
 import { useStore } from '@/store'
+import {pointsAPI} from "@/services/api";
 
 export default {
   name: 'CoordinatePlot',
@@ -43,14 +55,13 @@ export default {
       default: null
     }
   },
-  emits: ['pointSelected'],
+  emits: ['pointSelected', 'pointChecked'],
   setup(props, { emit }) {
     const store = useStore()
-    const canvas = ref(null)
-    const ctx = ref(null)
 
-    const canvasSize = ref(400)
-    const scale = ref(30) // пикселей на единицу координат
+    const pointChecks = computed(() => store.state.drawPointChecks)
+    const loading = ref(false)
+
     const currentRadius = ref(props.radius)
 
     const pointColors = {
@@ -59,214 +70,240 @@ export default {
     }
 
     onMounted(() => {
-      initializeCanvas()
-      drawCoordinateSystem()
-      drawPoints()
+      updateGraph()
     })
 
-    watch(() => props.radius, (newRadius) => {
+    watch(() => props.radius, async(newRadius) => {
       currentRadius.value = newRadius
-      redrawPlot()
+      if(newRadius) {
+        loading.value = true
+        try {
+          const response = await pointsAPI.getHistory(newRadius)
+          store.dispatch('setDrawPointChecks', response.data)
+        } catch (error) {
+          console.error('Ошибка при загрузке истории:', error)
+        } finally {
+          loading.value = false
+        }
+      }
+      updateGraph()
     })
 
     watch(() => store.state.pointChecks, () => {
-      drawPoints()
+      // drawPoints()
     }, { deep: true })
 
-    const initializeCanvas = () => {
-      if (canvas.value) {
-        ctx.value = canvas.value.getContext('2d')
+    const handleGraphClick = async (event) => {
 
-        // Адаптивный размер canvas
-        const container = canvas.value.parentElement
-        const containerWidth = container.clientWidth
-        canvasSize.value = Math.min(400, containerWidth - 40)
-        scale.value = canvasSize.value / 14 // 7 единиц в каждую сторону от центра
+      const graph = document.getElementById('graph');
+
+      // Проверяем что выбран R
+      if (!currentRadius.value) {
+          console.log('Сначала выберите радиус R');
+          return;
       }
-    }
+      const r = currentRadius.value;
+      const rect = graph.getBoundingClientRect();
+      const x = event.clientX - rect.left - 200;
+      const y = 200 - (event.clientY - rect.top);
 
-    const redrawPlot = () => {
-      drawCoordinateSystem()
-      drawPoints()
-    }
+      // Масштабирование координат
+      const scale = 150 / r;
+      const realX = (x / scale).toFixed(2);
+      const realY = (y / scale).toFixed(2);
 
-    const drawCoordinateSystem = () => {
-      if (!ctx.value) return
+      emit('pointSelected', { x: realX, y: realY})
 
-      const center = canvasSize.value / 2
-      ctx.value.clearRect(0, 0, canvasSize.value, canvasSize.value)
-
-      // Сетка
-      ctx.value.strokeStyle = '#e9ecef'
-      ctx.value.lineWidth = 1
-
-      for (let i = -7; i <= 7; i++) {
-        const pos = center + i * scale.value
-
-        // Вертикальные линии
-        ctx.value.beginPath()
-        ctx.value.moveTo(pos, 0)
-        ctx.value.lineTo(pos, canvasSize.value)
-        ctx.value.stroke()
-
-        // Горизонтальные линии
-        ctx.value.beginPath()
-        ctx.value.moveTo(0, pos)
-        ctx.value.lineTo(canvasSize.value, pos)
-        ctx.value.stroke()
-      }
-
-      // Оси координат
-      ctx.value.strokeStyle = '#495057'
-      ctx.value.lineWidth = 2
-
-      // Ось X
-      ctx.value.beginPath()
-      ctx.value.moveTo(0, center)
-      ctx.value.lineTo(canvasSize.value, center)
-      ctx.value.stroke()
-
-      // Ось Y
-      ctx.value.beginPath()
-      ctx.value.moveTo(center, 0)
-      ctx.value.lineTo(center, canvasSize.value)
-      ctx.value.stroke()
-
-      // Стрелки осей
-      drawArrow(center, 10, Math.PI * 1.5) // Y вверх
-      drawArrow(canvasSize.value - 10, center, 0) // X вправо
-
-      // Подписи осей
-      ctx.value.fillStyle = '#495057'
-      ctx.value.font = '12px Arial'
-      ctx.value.fillText('Y', center - 15, 15)
-      ctx.value.fillText('X', canvasSize.value - 15, center - 10)
-
-      // Засечки и цифры на осях
-      drawAxisLabels(center)
-
-      // Отрисовка области, если выбран радиус
-      if (currentRadius.value) {
-        drawArea(center)
-      }
-    }
-
-    const drawArrow = (x, y, angle) => {
-      ctx.value.save()
-      ctx.value.translate(x, y)
-      ctx.value.rotate(angle)
-
-      ctx.value.beginPath()
-      ctx.value.moveTo(-5, -5)
-      ctx.value.lineTo(0, 0)
-      ctx.value.lineTo(-5, 5)
-      ctx.value.stroke()
-
-      ctx.value.restore()
-    }
-
-    const drawAxisLabels = (center) => {
-      ctx.value.fillStyle = '#495057'
-      ctx.value.font = '10px Arial'
-      ctx.value.textAlign = 'center'
-
-      for (let i = -6; i <= 6; i++) {
-        if (i === 0) continue
-
-        const pos = center + i * scale.value
-
-        // Подписи оси X
-        ctx.value.fillText(i.toString(), pos, center + 15)
-
-        // Подписи оси Y
-        ctx.value.fillText((-i).toString(), center - 15, pos + 3)
-      }
-    }
-
-    const drawArea = (center) => {
-      if (!currentRadius.value) return
-
-      const r = currentRadius.value
-      ctx.value.fillStyle = 'rgba(102, 126, 234, 0.3)'
-      ctx.value.strokeStyle = '#667eea'
-      ctx.value.lineWidth = 2
-
-      ctx.value.beginPath()
-
-      // 1-я четверть: прямоугольный треугольник
-      ctx.value.moveTo(center, center)
-      ctx.value.lineTo(center + r * scale.value, center) // вправо по X
-      ctx.value.lineTo(center, center - (r/2) * scale.value) // вверх по Y (половина R)
-      ctx.value.closePath()
-
-      // 2-я четверть: четверть круга
-      ctx.value.moveTo(center, center)
-      ctx.value.arc(center, center, r * scale.value, Math.PI, Math.PI * 1.5, false)
-
-      // 3-я четверть: прямоугольник
-      ctx.value.moveTo(center, center)
-      ctx.value.lineTo(center - (r/2) * scale.value, center) // влево по X (половина R)
-      ctx.value.lineTo(center - (r/2) * scale.value, center + r * scale.value) // вниз по Y
-      ctx.value.lineTo(center, center + r * scale.value) // вправо по X
-      ctx.value.closePath()
-
-      ctx.value.fill()
-      ctx.value.stroke()
-    }
-
-    const drawPoints = () => {
-      if (!ctx.value || !store.state.pointChecks.length) return
-
-      const center = canvasSize.value / 2
-
-      store.state.pointChecks.forEach(point => {
-        // Рисуем только точки с текущим радиусом или все, если радиус не выбран
-        if (!currentRadius.value || point.r === currentRadius.value) {
-          const x = center + point.x * scale.value
-          const y = center - point.y * scale.value // инвертируем Y для canvas
-
-          ctx.value.beginPath()
-          ctx.value.arc(x, y, 4, 0, Math.PI * 2)
-          ctx.value.fillStyle = point.result ? pointColors.hit : pointColors.miss
-          ctx.value.fill()
-          ctx.value.strokeStyle = '#fff'
-          ctx.value.lineWidth = 1
-          ctx.value.stroke()
+     // Отправка координат на сервер
+      try {
+        const pointData = {
+          x: realX,
+          y: realY,
+          r: currentRadius.value
         }
-      })
+
+        const response = await pointsAPI.checkPoint(pointData)
+
+        if (response.data) {
+          store.dispatch('addPointCheck', response.data)
+          store.dispatch('addDrawPointCheck', response.data)
+          emit('pointChecked', response.data)
+          updatePoints(currentRadius.value)
+
+        }
+      } catch (error) {
+        const errorMsg = error.response?.data?.error || 'Ошибка при проверке точки'
+        console.log(errorMsg)
+      }
     }
 
-    const handleCanvasClick = (event) => {
-      if (!canvas.value) return
+    const updateGraph = () => {
 
-      const rect = canvas.value.getBoundingClientRect()
-      const x = event.clientX - rect.left
-      const y = event.clientY - rect.top
+      const r = currentRadius.value || 1;
 
-      const center = canvasSize.value / 2
-      const coordX = (x - center) / scale.value
-      const coordY = (center - y) / scale.value // инвертируем Y
+      const scale = 150 / r;
 
-      // Округляем координаты для лучшего UX
-      const roundedX = Math.round(coordX * 2) / 2 // округление до 0.5
-      const roundedY = Math.round(coordY * 2) / 2
+      // Обновляем область
+      const area = document.getElementById('area');
 
-      emit('pointSelected', { x: roundedX, y: roundedY })
+      area.setAttribute('d',
+          `
+           M 0,0 L ${-r/2 * scale},0 L ${-r/2 * scale},${r * scale} L 0,${r * scale} Z
+           M 0,0 L ${-r/2 * scale},0 L 0,${-r/2 * scale} Z
+           M 0,0 L 0,${-r * scale} A ${r * scale},${r * scale} 0 0,1 ${r * scale},0 L 0,0 Z
+           `
+      );
+
+      // Обновляем точки
+      updatePoints(currentRadius.value);
+
+      // Обновляем засечки и подписи
+      updateGrid(r, scale);
+  }
+
+  const updateGrid = (r, scale) => {
+    const gridGroup = document.getElementById('grid');
+
+    // Очищаем предыдущие засечки и подписи
+    while (gridGroup.firstChild) {
+        gridGroup.removeChild(gridGroup.firstChild);
+    }
+    if (!currentRadius.value) {
+        drawGrid();
+        return;
     }
 
-    const resizeCanvas = () => {
-      nextTick(() => {
-        initializeCanvas()
-        redrawPlot()
-      })
+    // Координаты для засечек и подписей
+    const tickLength = 5; // Длина засечек
+
+    const values = [-r, -r / 2, r / 2, r];
+
+    values.forEach(value => {
+        const scaledValue = value * scale;
+        // Ось X
+        if (value !== 0) {
+            const xTick = document.createElementNS("http://www.w3.org/2000/svg", 'line');
+            xTick.setAttribute('x1', scaledValue);
+            xTick.setAttribute('y1', -tickLength);
+            xTick.setAttribute('x2', scaledValue);
+            xTick.setAttribute('y2', tickLength);
+            xTick.setAttribute('stroke', 'black');
+            xTick.setAttribute('stroke-width', 1);
+            gridGroup.appendChild(xTick);
+
+            const xLabel = document.createElementNS("http://www.w3.org/2000/svg", 'text');
+            xLabel.setAttribute('x', scaledValue - 5);
+            xLabel.setAttribute('y', -10); // выше оси X
+            xLabel.setAttribute('font-size', 12);
+            xLabel.textContent = value.toString();
+            gridGroup.appendChild(xLabel);
+        }
+
+        // ось Y
+        if (value !== 0) {
+            const yTick = document.createElementNS("http://www.w3.org/2000/svg", 'line');
+            yTick.setAttribute('x1', -tickLength);
+            yTick.setAttribute('y1', -scaledValue);
+            yTick.setAttribute('x2', tickLength);
+            yTick.setAttribute('y2', -scaledValue);
+            yTick.setAttribute('stroke', 'black');
+            yTick.setAttribute('stroke-width', 1);
+            gridGroup.appendChild(yTick);
+
+            const yLabel = document.createElementNS("http://www.w3.org/2000/svg", 'text');
+            yLabel.setAttribute('x', 10); // справа от оси Y
+            yLabel.setAttribute('y', -scaledValue + 5);
+            yLabel.setAttribute('font-size', 12);
+            yLabel.textContent = value.toString();
+            gridGroup.appendChild(yLabel);
+        }
+    });
+  }
+
+  const drawGrid = () => {
+    const gridGroup = document.getElementById('grid');
+
+    // Координаты для засечек и подписей
+    const tickLength = 5; // Длина засечек
+
+    const valueMappings = [
+      [-1, '-R'],
+      [-1/2, '-R/2'],
+      [1/2, 'R/2'],
+      [1, 'R']
+    ];
+
+    valueMappings.forEach(value => {
+        const scale = value[0];
+        const label = value[1];
+        // Ось X
+        const xTick = document.createElementNS("http://www.w3.org/2000/svg", 'line');
+        xTick.setAttribute('x1', 150 * scale);
+        xTick.setAttribute('y1', -tickLength);
+        xTick.setAttribute('x2', 150 * scale);
+        xTick.setAttribute('y2', tickLength);
+        xTick.setAttribute('stroke', 'black');
+        xTick.setAttribute('stroke-width', 1);
+        gridGroup.appendChild(xTick);
+
+        const xLabel = document.createElementNS("http://www.w3.org/2000/svg", 'text');
+        xLabel.setAttribute('x', 150 * scale - 5);
+        xLabel.setAttribute('y', -10); // выше оси X
+        xLabel.setAttribute('font-size', 12);
+        xLabel.textContent = label;
+        gridGroup.appendChild(xLabel);
+
+        // ось Y
+        const yTick = document.createElementNS("http://www.w3.org/2000/svg", 'line');
+        yTick.setAttribute('x1', -tickLength);
+        yTick.setAttribute('y1', -150 * scale);
+        yTick.setAttribute('x2', tickLength);
+        yTick.setAttribute('y2', -150 * scale);
+        yTick.setAttribute('stroke', 'black');
+        yTick.setAttribute('stroke-width', 1);
+        gridGroup.appendChild(yTick);
+
+        const yLabel = document.createElementNS("http://www.w3.org/2000/svg", 'text');
+        yLabel.setAttribute('x', 10); // справа от оси Y
+        yLabel.setAttribute('y', -150 * scale + 5);
+        yLabel.setAttribute('font-size', 12);
+        yLabel.textContent = label;
+        gridGroup.appendChild(yLabel);
+    });
+  }
+
+  const updatePoints = (r) => {
+    const pointsGroup = document.getElementById('points');
+    pointsGroup.innerHTML = ''; // Clear existing points
+    if(!r) {
+      return
+    }
+
+    const data = pointChecks.value;
+
+    data.forEach(point => {
+        const scale = 150 / r;
+        const scaledX = point.x * scale;
+        const scaledY = -point.y * scale;
+
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+        circle.setAttribute('cx', scaledX);
+        circle.setAttribute('cy', scaledY);
+        circle.setAttribute('r', 3);
+        circle.setAttribute('fill', point.result ? 'green' : 'red');
+
+        pointsGroup.appendChild(circle);
+    });
+}
+    const clearPlot = () => {
+      drawGrid()
     }
 
     return {
-      canvas,
-      canvasSize,
       currentRadius,
-      handleCanvasClick,
-      resizeCanvas
+      handleGraphClick,
+      // resizeCanvas,
+      clearPlot
     }
   }
 }
@@ -275,7 +312,7 @@ export default {
 <style lang="scss" scoped>
 .coordinate-plot {
   h2 {
-    text-align: center;
+    text-align: start;
     margin-bottom: 20px;
     color: #2c3e50;
 
@@ -348,8 +385,11 @@ export default {
   }
 
   &.miss {
-    background: #dc3545;
+    background: $danger-color;
   }
+}
+.miss {
+color: $danger-color;
 }
 
 .current-radius {
@@ -358,6 +398,7 @@ export default {
   border-radius: 6px;
   font-size: 14px;
   color: #495057;
+
 
   @include mobile {
     font-size: 12px;

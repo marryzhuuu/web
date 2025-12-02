@@ -34,6 +34,7 @@ export default {
   padding: 20px 0;
   display: flex;
   align-items: center;
+  background: $primary-gradient;
 
   @include mobile {
     padding: 10px 0;

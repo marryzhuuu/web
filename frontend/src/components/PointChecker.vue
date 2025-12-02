@@ -1,6 +1,6 @@
 <template>
   <div class="point-checker card">
-    <h2>Проверка попадания точки в область</h2>
+    <h2>Координаты точки и радиус:</h2>
 
     <div class="input-sections">
       <!-- Координата X -->
@@ -82,7 +82,7 @@ import { pointsAPI } from '@/services/api'
 
 export default {
   name: 'PointChecker',
-  emits: ['pointChecked'],
+  emits: ['pointChecked', 'clear-all', 'radiusChanged'],
   setup(props, { emit }) {
     const store = useStore()
 
@@ -91,7 +91,7 @@ export default {
     const messageType = ref('')
 
     const xValues = [-4, -3, -2, -1, 0, 1, 2, 3, 4]
-    const rValues = [1, 2, 3, 4]
+    const rValues = [-4, -3, -2, -1, 0, 1, 2, 3, 4]
 
     const form = reactive({
       x: null,
@@ -108,6 +108,7 @@ export default {
     const isFormValid = computed(() => {
       return form.x !== null &&
              form.y !== '' &&
+             form.y > 0 &&
              !errors.y &&
              form.r !== null
     })
@@ -124,6 +125,10 @@ export default {
     const setR = (value) => {
       form.r = value
       errors.r = ''
+      if (value <= 0) {
+        errors.r = 'R должен быть положительным'
+        return
+      }
       emit('radiusChanged', value)
     }
 
@@ -163,6 +168,8 @@ export default {
       form.r = null
       Object.keys(errors).forEach(key => errors[key] = '')
       message.value = ''
+      // Отправляем событие родителю
+      emit('clear-all')
     }
 
     const showMessage = (text, type = 'error') => {
@@ -223,7 +230,7 @@ export default {
 <style lang="scss" scoped>
 .point-checker {
   h2 {
-    text-align: center;
+    text-align: start;
     margin-bottom: 30px;
     color: #2c3e50;
 
@@ -300,7 +307,7 @@ export default {
   }
 
   &.active {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: $primary-gradient;
     color: white;
     border-color: #667eea;
   }

@@ -4,7 +4,8 @@ export default createStore({
   state: {
     user: null,
     isAuthenticated: false,
-    pointChecks: []
+    pointChecks: [],
+    drawPointChecks: []
   },
   mutations: {
     SET_USER(state, user) {
@@ -20,6 +21,12 @@ export default createStore({
     },
     ADD_POINT_CHECK(state, check) {
       state.pointChecks.unshift(check)
+    },
+    SET_DRAW_POINT_CHECKS(state, checks) {
+      state.drawPointChecks = checks
+    },
+    ADD_DRAW_POINT_CHECK(state, check) {
+      state.drawPointChecks.unshift(check)
     }
   },
   actions: {
@@ -35,12 +42,19 @@ export default createStore({
     },
     addPointCheck({ commit }, check) {
       commit('ADD_POINT_CHECK', check)
+    },
+    setDrawPointChecks({ commit }, checks) {
+      commit('SET_DRAW_POINT_CHECKS', checks)
+    },
+    addDrawPointCheck({ commit }, check) {
+      commit('ADD_DRAW_POINT_CHECK', check)
     }
   },
   getters: {
     isAuthenticated: state => state.isAuthenticated,
     user: state => state.user,
-    pointChecks: state => state.pointChecks
+    pointChecks: state => state.pointChecks,
+    drawPointChecks: state => state.drawPointChecks
   }
 })
 
