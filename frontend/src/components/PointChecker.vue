@@ -108,7 +108,7 @@ export default {
     const isFormValid = computed(() => {
       return form.x !== null &&
              form.y !== '' &&
-             form.y > 0 &&
+             form.r > 0 &&
              !errors.y &&
              form.r !== null
     })
@@ -194,6 +194,7 @@ export default {
 
         if (response.data) {
           store.dispatch('addPointCheck', response.data)
+          store.dispatch('addDrawPointCheck', response.data)
           showMessage(
             `Точка (${pointData.x}, ${pointData.y}) ${response.data.result ? 'попадает' : 'не попадает'} в область при R=${pointData.r}`,
             'success'

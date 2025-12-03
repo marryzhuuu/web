@@ -91,6 +91,7 @@ export default {
 
     watch(() => store.state.pointChecks, () => {
       // drawPoints()
+      updatePoints(currentRadius.value)
     }, { deep: true })
 
     const handleGraphClick = async (event) => {
@@ -128,7 +129,7 @@ export default {
           store.dispatch('addPointCheck', response.data)
           store.dispatch('addDrawPointCheck', response.data)
           emit('pointChecked', response.data)
-          updatePoints(currentRadius.value)
+          // updatePoints(currentRadius.value)
 
         }
       } catch (error) {
