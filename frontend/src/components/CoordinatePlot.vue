@@ -314,7 +314,7 @@ export default {
   h2 {
     text-align: start;
     margin-bottom: 20px;
-    color: #2c3e50;
+    color: $dark-color;
 
     @include mobile {
       font-size: 20px;
@@ -326,20 +326,6 @@ export default {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
-}
-
-.plot-canvas {
-  border: 2px solid #e9ecef;
-  border-radius: 8px;
-  background: white;
-  cursor: crosshair;
-  transition: border-color 0.3s ease;
-  max-width: 100%;
-  height: auto;
-
-  &:hover {
-    border-color: #667eea;
-  }
 }
 
 .plot-info {
@@ -366,7 +352,7 @@ export default {
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  color: #495057;
+  color: $dark-color;
 
   @include mobile {
     font-size: 12px;
@@ -378,10 +364,10 @@ export default {
   height: 12px;
   border-radius: 50%;
   border: 2px solid white;
-  box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 2px $dark-color;
 
   &.hit {
-    background: #28a745;
+    background: $success-color;
   }
 
   &.miss {
@@ -389,15 +375,15 @@ export default {
   }
 }
 .miss {
-color: $danger-color;
+  color: $danger-color;
 }
 
 .current-radius {
   padding: 8px 16px;
-  background: #f8f9fa;
+  background: $light-color;
   border-radius: 6px;
   font-size: 14px;
-  color: #495057;
+  color: $dark-color;
 
 
   @include mobile {

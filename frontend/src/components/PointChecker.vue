@@ -232,7 +232,7 @@ export default {
   h2 {
     text-align: start;
     margin-bottom: 30px;
-    color: #2c3e50;
+    color: $dark-color;
 
     @include mobile {
       font-size: 20px;
@@ -266,7 +266,7 @@ export default {
 .input-section {
   h3 {
     margin-bottom: 12px;
-    color: #495057;
+    color: $dark-color;
     font-size: 16px;
 
     @include mobile {
@@ -292,24 +292,24 @@ export default {
 
 .coordinate-btn {
   padding: 10px 8px;
-  border: 2px solid #e9ecef;
+  border: 2px solid $light-color;
   border-radius: 6px;
   background: white;
-  color: #495057;
+  color: $dark-color;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
 
   &:hover:not(.active) {
-    border-color: #667eea;
-    background: #f8f9ff;
+    border-color: $active-color;
+    background: $light-color;
   }
 
   &.active {
     background: $primary-gradient;
     color: white;
-    border-color: #667eea;
+    border-color: $active-color;
   }
 
   @include mobile {
@@ -338,6 +338,6 @@ export default {
 }
 
 .error {
-  border-color: #dc3545 !important;
+  border-color: $danger-color !important;
 }
 </style>

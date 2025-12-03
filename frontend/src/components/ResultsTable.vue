@@ -205,7 +205,7 @@ export default {
     gap: 15px;
 
     h2 {
-      color: #2c3e50;
+      color: $dark-color;
       margin: 0;
 
       @include mobile {
@@ -241,12 +241,12 @@ table {
 }
 
 th {
-  background: #f8f9fa;
+  background: $light-color;
   padding: 12px 8px;
   text-align: left;
   font-weight: 600;
-  color: #495057;
-  border-bottom: 2px solid #e9ecef;
+  color: $dark-color;
+  border-bottom: 2px solid $light-color;
 
   @include mobile {
     padding: 8px 6px;
@@ -255,7 +255,7 @@ th {
 
 td {
   padding: 12px 8px;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid $light-color;
 
   @include mobile {
     padding: 8px 6px;
@@ -266,15 +266,15 @@ tr {
   transition: background-color 0.3s ease;
 
   &:hover {
-    background: #f8f9ff;
+    background: $light-color;
   }
 
   &.hit {
-    border-left: 3px solid #28a745;
+    border-left: 3px solid $success-color;
   }
 
   &.miss {
-    border-left: 3px solid #dc3545;
+    border-left: 3px solid $danger-color;
   }
 }
 
@@ -285,20 +285,20 @@ tr {
   font-weight: 600;
 
   &.hit {
-    background: #d4edda;
-    color: #155724;
+    background: $light-color;
+    color: $success-color;
   }
 
   &.miss {
-    background: #f8d7da;
-    color: #721c24;
+    background: $light-color;
+    color: $danger-color
   }
 }
 
 .empty-state {
   text-align: center;
   padding: 40px 20px;
-  color: #6c757d;
+  color: $dark-color;
 
   .hint {
     font-size: 12px;
@@ -318,7 +318,7 @@ tr {
 
 .pagination-btn {
   padding: 8px 16px;
-  border: 1px solid #e9ecef;
+  border: 1px solid $light-color;
   background: white;
   border-radius: 6px;
   cursor: pointer;
@@ -326,9 +326,9 @@ tr {
   font-size: 14px;
 
   &:hover:not(:disabled) {
-    background: #667eea;
+    background: $active-color;
     color: white;
-    border-color: #667eea;
+    border-color: $active-color;
   }
 
   &:disabled {
@@ -343,7 +343,7 @@ tr {
 }
 
 .pagination-info {
-  color: #495057;
+  color: $dark-color;
   font-size: 14px;
 
   @include mobile {
@@ -355,7 +355,7 @@ tr {
   display: flex;
   justify-content: space-around;
   padding: 15px;
-  background: #f8f9fa;
+  background: $light-color;
   border-radius: 8px;
   flex-wrap: wrap;
   gap: 15px;
@@ -368,7 +368,7 @@ tr {
 
 .stat-item {
   font-size: 14px;
-  color: #495057;
+  color: $dark-color;
 
   @include mobile {
     font-size: 12px;

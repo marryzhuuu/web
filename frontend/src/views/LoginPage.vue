@@ -47,7 +47,6 @@ export default {
   margin-bottom: 30px;
 
   h1 {
-    color: #2c3e50;
     margin-bottom: 20px;
     font-size: 28px;
 
@@ -69,7 +68,7 @@ export default {
     p {
       margin: 0;
       padding: 10px;
-      background: #f8f9fa;
+      background: $light-color;
       border-radius: 6px;
       font-size: 14px;
 

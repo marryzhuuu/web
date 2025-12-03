@@ -181,7 +181,7 @@ export default {
   h2 {
     text-align: center;
     margin-bottom: 30px;
-    color: #2c3e50;
+    color: $dark-color;
   }
 }
 
@@ -207,23 +207,16 @@ export default {
 .register-info {
   margin-top: 20px;
   padding: 15px;
-  background: #f8f9fa;
+  background: $light-color;
   border-radius: 8px;
   font-size: 14px;
 
   p {
     margin: 5px 0;
-
-    code {
-      background: #e9ecef;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family: monospace;
-    }
   }
 }
 
 .error {
-  border-color: #dc3545 !important;
+  border-color: $danger-color !important;
 }
 </style>

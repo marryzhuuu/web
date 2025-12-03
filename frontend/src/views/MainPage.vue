@@ -146,7 +146,6 @@ export default {
 
 .user-info {
   h1 {
-    color: #2c3e50;
     margin-bottom: 8px;
     font-size: 24px;
 
@@ -160,7 +159,7 @@ export default {
   }
 
   p {
-    color: #6c757d;
+    color: $dark-color;
     margin: 0;
     font-size: 16px;
 
