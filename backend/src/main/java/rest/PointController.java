@@ -58,7 +58,7 @@ public class PointController {
 
     @GET
     @Path("/history")
-    public Response getHistory(@HeaderParam("X-Username") String username) {
+    public Response getHistory(@HeaderParam("X-Username") String username, @QueryParam("r") Double radius) {
         if (username == null) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
@@ -69,17 +69,39 @@ public class PointController {
         }
 
         List<Result> checks = pointCheckService.getUserChecks(user);
+        List<Map<String, Object>> response;
 
-        List<Map<String, Object>> response = checks.stream().map(check -> {
-            Map<String, Object> item = new HashMap<>();
-            item.put("x", check.getX());
-            item.put("y", check.getY());
-            item.put("r", check.getR());
-            item.put("result", check.getResult());
-            item.put("checkTime", check.getCheckTime());
-            return item;
-        }).collect(Collectors.toList());
+        // Если передан параметр r, пересчитываем результаты
+        if (radius != null) {
+            response = checks.stream().map(check -> {
+                // Пересчитываем результат с новым радиусом
+                boolean recalculatedResult = PointCheckService.checkHit(
+                        check.getX(),
+                        check.getY(),
+                        radius
+                );
+                Map<String, Object> item = new HashMap<>();
+                item.put("x", check.getX());
+                item.put("y", check.getY());
+                item.put("r", radius);
+                item.put("result", recalculatedResult);
+                item.put("checkTime", check.getCheckTime());
+                return item;
+            }).collect(Collectors.toList());
 
+        } else {
+            // Если параметр r не передан, возвращаем оригинальные данные
+            response = checks.stream().map(check -> {
+                Map<String, Object> item = new HashMap<>();
+                item.put("x", check.getX());
+                item.put("y", check.getY());
+                item.put("r", check.getR());
+                item.put("result", check.getResult());
+                item.put("checkTime", check.getCheckTime());
+                return item;
+            }).collect(Collectors.toList());
+
+        }
         return Response.ok(response).build();
     }
 
