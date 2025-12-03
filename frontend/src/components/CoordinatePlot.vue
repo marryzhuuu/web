@@ -3,7 +3,7 @@
     <h2>Область проверки:</h2>
 
     <div class="plot-container">
-      <svg id="graph" width="400" height="400"  viewBox="-200 -200 400 400" @click="handleGraphClick">
+      <svg id="graph" :class="{'pointer': currentRadius}" width="400" height="400"  viewBox="-200 -200 400 400" @click="handleGraphClick">
           <!-- Координатные оси -->
           <line x1="-200" y1="0" x2="200" y2="0" stroke="black" stroke-width="2"/>
           <line x1="0" y1="-200" x2="0" y2="200" stroke="black" stroke-width="2"/>
@@ -327,6 +327,10 @@ export default {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
+
+  .pointer {
+    cursor: crosshair;
+  }
 }
 
 .plot-info {
