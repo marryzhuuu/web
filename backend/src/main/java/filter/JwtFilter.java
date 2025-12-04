@@ -26,7 +26,8 @@ public class JwtFilter implements ContainerRequestFilter {
     private static final String[] PUBLIC_PATHS = {
             "/auth/login",
             "/auth/register",
-            "/auth/validate"
+            "/auth/validate",
+            "/test"
     };
 
     @Override
