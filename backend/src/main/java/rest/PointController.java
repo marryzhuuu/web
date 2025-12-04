@@ -28,9 +28,10 @@ public class PointController {
     @POST
     @Path("/check")
     public Response checkPoint(PointRequest request, @HeaderParam("X-Username") String username) {
-        if (username == null) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
+        // JwtFilter уже проверил авторизацию и установил X-Username
+//        if (username == null) {
+//            return Response.status(Response.Status.UNAUTHORIZED).build();
+//        }
 
         User user = userService.findByUsername(username);
         if (user == null) {
@@ -59,9 +60,10 @@ public class PointController {
     @GET
     @Path("/history")
     public Response getHistory(@HeaderParam("X-Username") String username, @QueryParam("r") Double radius) {
-        if (username == null) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
+        // JwtFilter уже проверил авторизацию и установил X-Username
+//        if (username == null) {
+//            return Response.status(Response.Status.UNAUTHORIZED).build();
+//        }
 
         User user = userService.findByUsername(username);
         if (user == null) {

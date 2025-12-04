@@ -76,7 +76,7 @@
 </template>
 
 <script>
-import { ref, reactive, computed } from 'vue'
+import {ref, reactive, computed, watch, onMounted} from 'vue'
 import { useStore } from '@/store'
 import { pointsAPI } from '@/services/api'
 
@@ -93,11 +93,28 @@ export default {
     const xValues = [-4, -3, -2, -1, 0, 1, 2, 3, 4]
     const rValues = [-4, -3, -2, -1, 0, 1, 2, 3, 4]
 
+    // Загружаем сохраненное состояние или используем значения по умолчанию
+    const savedForm = JSON.parse(localStorage.getItem('pointForm') || '{}')
+
     const form = reactive({
-      x: null,
-      y: '',
-      r: null
+      x: savedForm.x || null,
+      y: savedForm.y || '',
+      r: savedForm.r || null
     })
+
+    // Сохраняем состояние формы при изменениях
+    const saveFormState = () => {
+      localStorage.setItem('pointForm', JSON.stringify({
+        x: form.x,
+        y: form.y,
+        r: form.r
+      }))
+    }
+
+    // Наблюдаем за изменениями формы
+    watch(() => form.x, saveFormState)
+    watch(() => form.y, saveFormState)
+    watch(() => form.r, saveFormState)
 
     const errors = reactive({
       x: '',
@@ -168,9 +185,21 @@ export default {
       form.r = null
       Object.keys(errors).forEach(key => errors[key] = '')
       message.value = ''
+      localStorage.removeItem('pointForm')
+
       // Отправляем событие родителю
       emit('clear-all')
     }
+
+    // Восстанавливаем состояние при загрузке компонента
+    onMounted(() => {
+      if (savedForm.x !== undefined) form.x = savedForm.x
+      if (savedForm.y !== undefined) form.y = savedForm.y
+      if (savedForm.r !== undefined) {
+        form.r = savedForm.r
+        emit('radiusChanged', savedForm.r)
+      }
+    })
 
     const showMessage = (text, type = 'error') => {
       message.value = text

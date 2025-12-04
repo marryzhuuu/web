@@ -1,20 +1,30 @@
 import { createStore } from 'vuex'
+import { authService } from '@/services/auth'
+import {inject} from "vue";
+
+export const useStore = () => inject('store')
 
 export default createStore({
   state: {
-    user: null,
-    isAuthenticated: false,
+    token: localStorage.getItem('token'),
+    user: authService.getStoredUser(),
+    isAuthenticated: authService.isAuthenticated(),
     pointChecks: [],
     drawPointChecks: []
   },
   mutations: {
-    SET_USER(state, user) {
+    SET_AUTH(state, { token, user }) {
+      state.token = token
       state.user = user
       state.isAuthenticated = true
+      localStorage.setItem('token', token)
+      localStorage.setItem('user', JSON.stringify(user))
     },
-    CLEAR_USER(state) {
+    CLEAR_AUTH(state) {
+      state.token = null
       state.user = null
       state.isAuthenticated = false
+      authService.logout()
     },
     SET_POINT_CHECKS(state, checks) {
       state.pointChecks = checks
@@ -30,12 +40,54 @@ export default createStore({
     }
   },
   actions: {
-    login({ commit }, user) {
-      commit('SET_USER', user)
+    async login({ commit }, { username, password }) {
+      const result = await authService.login(username, password)
+      if (result.success) {
+        commit('SET_AUTH', {
+          token: result.data.token,
+          user: result.data.user
+        })
+        return { success: true }
+      }
+      return { success: false, error: result.error }
     },
+
+    async register({ commit }, { username, password }) {
+      const result = await authService.register(username, password)
+      if (result.success) {
+        commit('SET_AUTH', {
+          token: result.data.token,
+          user: result.data.user
+        })
+        return { success: true }
+      }
+      return { success: false, error: result.error }
+    },
+
+    async initializeAuth({ commit, dispatch }) {
+      const token = localStorage.getItem('token')
+      if (token) {
+        // Проверяем токен на сервере
+        const result = await authService.validateToken()
+        if (result.valid) {
+          commit('SET_AUTH', {
+            token,
+            user: result.user
+          })
+          return true
+        } else {
+          // Токен невалиден - очищаем
+          dispatch('logout')
+          return false
+        }
+      }
+      return false
+    },
+
     logout({ commit }) {
-      commit('CLEAR_USER')
+      commit('CLEAR_AUTH')
       commit('SET_POINT_CHECKS', [])
+      commit('SET_DRAW_POINT_CHECKS', [])
     },
     setPointChecks({ commit }, checks) {
       commit('SET_POINT_CHECKS', checks)
@@ -59,14 +111,14 @@ export default createStore({
 })
 
 // Для использования в компонентах
-import { inject } from 'vue'
-export const useStore = () => inject('store')
-export const useAuthStore = () => {
-  const store = useStore()
-  return {
-    isAuthenticated: store.state.isAuthenticated,
-    user: store.state.user,
-    login: (user) => store.dispatch('login', user),
-    logout: () => store.dispatch('logout')
-  }
-}
+// import { inject } from 'vue'
+// export const useStore = () => inject('store')
+// export const useAuthStore = () => {
+//   const store = useStore()
+//   return {
+//     isAuthenticated: store.state.isAuthenticated,
+//     user: store.state.user,
+//     login: (user) => store.dispatch('login', user),
+//     logout: () => store.dispatch('logout')
+//   }
+// }

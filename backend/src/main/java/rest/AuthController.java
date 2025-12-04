@@ -2,6 +2,7 @@ package rest;
 
 import entity.User;
 import service.UserService;
+import util.JwtUtil;
 import jakarta.ejb.EJB;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -21,44 +22,45 @@ public class AuthController {
     @EJB
     private UserService userService;
 
+    @EJB
+    private JwtUtil jwtUtil;
+
     @POST
     @Path("/login")
     public Response login(LoginRequest request) {
         try {
             logger.info("Login attempt for user: " + request.getUsername());
 
+            // Валидация входных данных
             if (request.getUsername() == null || request.getUsername().trim().isEmpty()) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("{\"error\": \"Username is required\"}")
-                        .build();
+                return createErrorResponse("Username is required");
             }
 
             if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("{\"error\": \"Password is required\"}")
-                        .build();
+                return createErrorResponse("Password is required");
             }
 
+            // Проверка пользователя
             if (userService.validateUser(request.getUsername(), request.getPassword())) {
+                // Генерация JWT токена
+                String token = jwtUtil.generateToken(request.getUsername());
+
+                User user = userService.findByUsername(request.getUsername());
+
                 Map<String, Object> response = new HashMap<>();
                 response.put("success", true);
                 response.put("message", "Login successful");
-                response.put("username", request.getUsername());
+                response.put("token", token);
+                response.put("user", createUserResponse(user));
+
                 logger.info("Login successful for user: " + request.getUsername());
                 return Response.ok(response).build();
             } else {
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", false);
-                response.put("error", "Invalid username or password");
-                logger.warning("Login failed for user: " + request.getUsername());
-                return Response.status(Response.Status.UNAUTHORIZED).entity(response).build();
+                return createErrorResponse("Invalid username or password");
             }
         } catch (Exception e) {
             logger.severe("Error during login: " + e.getMessage());
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", false);
-            response.put("error", "Internal server error");
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(response).build();
+            return createErrorResponse("Internal server error");
         }
     }
 
@@ -68,56 +70,98 @@ public class AuthController {
         try {
             logger.info("Registration attempt for user: " + request.getUsername());
 
+            // Валидация
             if (request.getUsername() == null || request.getUsername().trim().isEmpty()) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("{\"error\": \"Username is required\"}")
-                        .build();
+                return createErrorResponse("Username is required");
             }
 
             if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("{\"error\": \"Password is required\"}")
-                        .build();
+                return createErrorResponse("Password is required");
             }
 
             if (request.getUsername().length() < 3) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("{\"error\": \"Username must be at least 3 characters long\"}")
-                        .build();
+                return createErrorResponse("Username must be at least 3 characters long");
             }
 
             if (request.getPassword().length() < 6) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("{\"error\": \"Password must be at least 6 characters long\"}")
-                        .build();
+                return createErrorResponse("Password must be at least 6 characters long");
             }
 
             if (userService.findByUsername(request.getUsername()) != null) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("{\"error\": \"User already exists\"}")
-                        .build();
+                return createErrorResponse("User already exists");
             }
 
+            // Создание пользователя
             User user = userService.createUser(request.getUsername(), request.getPassword());
+
+            // Генерация токена
+            String token = jwtUtil.generateToken(request.getUsername());
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "User created successfully");
-            response.put("userId", user.getId());
-            response.put("username", user.getUsername());
+            response.put("token", token);
+            response.put("user", createUserResponse(user));
+
             logger.info("User registered successfully: " + request.getUsername());
             return Response.ok(response).build();
 
         } catch (IllegalArgumentException e) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("{\"error\": \"" + e.getMessage() + "\"}")
-                    .build();
+            return createErrorResponse(e.getMessage());
         } catch (Exception e) {
             logger.severe("Error during registration: " + e.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("{\"error\": \"Internal server error\"}")
-                    .build();
+            return createErrorResponse("Internal server error");
         }
+    }
+
+    @GET
+    @Path("/validate")
+    public Response validateToken(@HeaderParam("Authorization") String authHeader) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return createErrorResponse("Missing or invalid Authorization header");
+            }
+
+            String token = authHeader.substring(7);
+
+            if (!jwtUtil.validateToken(token)) {
+                return Response.status(Response.Status.UNAUTHORIZED)
+                        .entity("{\"error\": \"Invalid or expired token\"}")
+                        .build();
+            }
+
+            String username = jwtUtil.extractUsername(token);
+            User user = userService.findByUsername(username);
+
+            if (user == null) {
+                return createErrorResponse("User not found");
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("valid", true);
+            response.put("user", createUserResponse(user));
+
+            return Response.ok(response).build();
+
+        } catch (Exception e) {
+            logger.severe("Error validating token: " + e.getMessage());
+            return createErrorResponse("Internal server error");
+        }
+    }
+
+    private Map<String, Object> createUserResponse(User user) {
+        Map<String, Object> userResponse = new HashMap<>();
+        userResponse.put("id", user.getId());
+        userResponse.put("username", user.getUsername());
+        userResponse.put("createdAt", user.getCreatedAt());
+        return userResponse;
+    }
+
+    private Response createErrorResponse(String error) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", false);
+        response.put("error", error);
+        return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
     }
 
     public static class LoginRequest {
@@ -130,10 +174,5 @@ public class AuthController {
 
         public String getPassword() { return password; }
         public void setPassword(String password) { this.password = password; }
-
-        @Override
-        public String toString() {
-            return "LoginRequest{username='" + username + "', password='[PROTECTED]'}";
-        }
     }
 }

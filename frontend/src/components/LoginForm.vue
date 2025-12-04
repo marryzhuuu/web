@@ -57,8 +57,7 @@
 <script>
 import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/store'
-import { authService } from '@/services/auth'
+import { useAuthStore } from '@/store/auth'
 
 export default {
   name: 'LoginForm',
@@ -124,9 +123,17 @@ export default {
         let result
 
         if (isRegisterMode.value) {
-          result = await authService.register(form.username, form.password)
+          console.log('register: ', form.username, form.password)
+          result = await authStore.register({
+            username: form.username,
+            password: form.password
+          })
         } else {
-          result = await authService.login(form.username, form.password)
+          console.log('login: ', form.username, form.password)
+          result = await authStore.login({
+            username: form.username,
+            password: form.password
+          })
         }
 
         if (result.success) {

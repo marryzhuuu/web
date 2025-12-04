@@ -9,18 +9,40 @@ const api = axios.create({
   }
 })
 
-// Перехватчик для добавления username в заголовки
+// Перехватчик для добавления токена
 api.interceptors.request.use((config) => {
-  const username = localStorage.getItem('username')
-  if (username) {
-    config.headers['X-Username'] = username
+  const token = localStorage.getItem('token')
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`
   }
   return config
 })
 
+// Перехватчик для обработки ответов
+api.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response) {
+      if (error.response.status === 401) {
+        // Токен невалиден или истек
+        console.warn('Token expired or invalid')
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+
+        // Редирект на логин только если не на странице логина
+        if (!window.location.pathname.includes('/')) {
+          window.location.href = '/'
+        }
+      }
+    }
+    return Promise.reject(error)
+  }
+)
+
 export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
-  register: (credentials) => api.post('/auth/register', credentials)
+  register: (credentials) => api.post('/auth/register', credentials),
+  validateToken: () => api.get('/auth/validate')
 }
 
 export const pointsAPI = {

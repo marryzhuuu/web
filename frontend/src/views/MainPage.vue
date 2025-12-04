@@ -41,7 +41,7 @@
 <script>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/store'
+import { useAuthStore } from '@/store/auth'
 import { authService } from '@/services/auth'
 import PointChecker from '@/components/PointChecker.vue'
 import CoordinatePlot from '@/components/CoordinatePlot.vue'
@@ -61,7 +61,7 @@ export default {
     const plot = ref(null)
     const resultsTable = ref(null)
     const currentRadius = ref(null)
-    const username = ref(authService.getStoredUsername() || 'пользователь')
+    const username = ref(authService.getStoredUser()?.username || 'пользователь')
 
     const handlePointChecked = (pointData) => {
       // Обновляем таблицу результатов
@@ -86,7 +86,6 @@ export default {
     }
 
     const logout = () => {
-      authService.logout()
       authStore.logout()
       router.push('/')
     }

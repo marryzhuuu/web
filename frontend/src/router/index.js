@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '@/store'
+import { useAuthStore } from '@/store/auth'
 
 const routes = [
   {
@@ -13,6 +13,10 @@ const routes = [
     name: 'Main',
     component: () => import('@/views/MainPage.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/'
   }
 ]
 
@@ -21,8 +25,17 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
+// Флаг для предотвращения бесконечных редиректов
+let authInitialized = false
+
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
+
+  // Инициализируем аутентификацию только один раз
+  if (!authInitialized) {
+    authInitialized = true
+    await authStore.initializeAuth()
+  }
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next('/')
