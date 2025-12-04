@@ -123,13 +123,11 @@ export default {
         let result
 
         if (isRegisterMode.value) {
-          console.log('register: ', form.username, form.password)
           result = await authStore.register({
             username: form.username,
             password: form.password
           })
         } else {
-          console.log('login: ', form.username, form.password)
           result = await authStore.login({
             username: form.username,
             password: form.password
@@ -141,10 +139,11 @@ export default {
             isRegisterMode.value ? 'Регистрация успешна!' : 'Вход выполнен!',
             'success'
           )
-          authStore.login({ username: form.username })
+
           setTimeout(() => {
             router.push('/main')
           }, 1000)
+          
         } else {
           showMessage(result.error)
         }
