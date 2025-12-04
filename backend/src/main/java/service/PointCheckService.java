@@ -21,15 +21,15 @@ public class PointCheckService {
         return pointCheck;
     }
 
-    private boolean checkHit(Double x, Double y, Double r) {
+    public static boolean checkHit(Double x, Double y, Double r) {
         // Проверка попадания в область
-        // 1-я четверть: прямоугольный треугольник
+        // 1-я четверть: четверть круга
         if (x >= 0 && y >= 0) {
-            return (x <= r) && (y <= r/2) && (y <= -x/2 + r/2);
-        }
-        // 2-я четверть: четверть круга
-        if (x <= 0 && y >= 0) {
             return (x*x + y*y) <= (r*r);
+        }
+        // 2-я четверть: треугольник
+        if (x <= 0 && y >= 0) {
+            return (y <= x + r/2);
         }
         // 3-я четверть: прямоугольник
         if (x <= 0 && y <= 0) {
