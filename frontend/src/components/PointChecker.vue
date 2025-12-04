@@ -149,6 +149,10 @@ export default {
       emit('radiusChanged', value)
     }
 
+    const isValidFloat = (str) => {
+      return /^-?\d*\.?\d+$/.test(str.trim());
+    }
+
     const validateY = () => {
       const value = form.y.trim()
 
@@ -159,7 +163,7 @@ export default {
 
       // Проверка на число
       const numValue = parseFloat(value.replace(',', '.'))
-      if (isNaN(numValue)) {
+      if (!isValidFloat(value) || isNaN(numValue)) {
         errors.y = 'Y должен быть числом'
         return
       }
