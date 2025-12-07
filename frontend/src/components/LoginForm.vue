@@ -37,7 +37,7 @@
           class="btn btn-primary"
           :disabled="loading"
         >
-          {{ loading ? 'Вход...' : 'Войти' }}
+          {{ submitBtnLabel }}
         </button>
 
         <button
@@ -82,6 +82,13 @@ export default {
 
     const messageClass = computed(() => {
       return messageType.value === 'success' ? 'success-message' : 'error-message'
+    })
+
+    const submitBtnLabel = computed(() => {
+      if (loading.value) {
+        return 'Вход...'
+      }
+      return isRegisterMode.value ? 'Регистрация' : 'Войти'
     })
 
     const validateForm = () => {
@@ -167,6 +174,7 @@ export default {
       message,
       messageClass,
       isRegisterMode,
+      submitBtnLabel,
       handleSubmit,
       clearError,
       switchToRegister
