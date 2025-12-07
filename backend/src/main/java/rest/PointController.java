@@ -52,7 +52,7 @@ public class PointController {
         response.put("y", result.getY());
         response.put("r", result.getR());
         response.put("result", result.getResult());
-        response.put("checkTime", result.getCheckTime());
+        response.put("checkTime", result.getCheckTime().toString());
 
         return Response.ok(response).build();
     }
@@ -87,7 +87,7 @@ public class PointController {
                 item.put("y", check.getY());
                 item.put("r", radius);
                 item.put("result", recalculatedResult);
-                item.put("checkTime", check.getCheckTime());
+                item.put("checkTime", check.getCheckTime().toString());
                 return item;
             }).collect(Collectors.toList());
 
@@ -99,7 +99,7 @@ public class PointController {
                 item.put("y", check.getY());
                 item.put("r", check.getR());
                 item.put("result", check.getResult());
-                item.put("checkTime", check.getCheckTime());
+                item.put("checkTime", check.getCheckTime().toString());
                 return item;
             }).collect(Collectors.toList());
 
