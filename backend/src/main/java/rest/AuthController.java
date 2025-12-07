@@ -1,6 +1,7 @@
 package rest;
 
 import entity.User;
+import jakarta.ws.rs.core.Request;
 import service.UserService;
 import util.JwtUtil;
 import jakarta.ejb.EJB;
@@ -56,11 +57,11 @@ public class AuthController {
                 logger.info("Login successful for user: " + request.getUsername());
                 return Response.ok(response).build();
             } else {
-                return createErrorResponse("Invalid username or password");
+                return createErrorResponse("Invalid username or password", Response.Status.UNAUTHORIZED);
             }
         } catch (Exception e) {
             logger.severe("Error during login: " + e.getMessage());
-            return createErrorResponse("Internal server error");
+            return createErrorResponse("Internal server error", Response.Status.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -88,7 +89,7 @@ public class AuthController {
             }
 
             if (userService.findByUsername(request.getUsername()) != null) {
-                return createErrorResponse("User already exists");
+                return createErrorResponse("User already exists", Response.Status.CONFLICT);
             }
 
             // Создание пользователя
@@ -110,7 +111,7 @@ public class AuthController {
             return createErrorResponse(e.getMessage());
         } catch (Exception e) {
             logger.severe("Error during registration: " + e.getMessage());
-            return createErrorResponse("Internal server error");
+            return createErrorResponse("Internal server error", Response.Status.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -119,7 +120,7 @@ public class AuthController {
     public Response validateToken(@HeaderParam("Authorization") String authHeader) {
         try {
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                return createErrorResponse("Missing or invalid Authorization header");
+                return createErrorResponse("Missing or invalid Authorization header", Response.Status.UNAUTHORIZED);
             }
 
             String token = authHeader.substring(7);
@@ -134,7 +135,7 @@ public class AuthController {
             User user = userService.findByUsername(username);
 
             if (user == null) {
-                return createErrorResponse("User not found");
+                return createErrorResponse("User not found", Response.Status.NOT_FOUND);
             }
 
             Map<String, Object> response = new HashMap<>();
@@ -145,7 +146,7 @@ public class AuthController {
 
         } catch (Exception e) {
             logger.severe("Error validating token: " + e.getMessage());
-            return createErrorResponse("Internal server error");
+            return createErrorResponse("Internal server error", Response.Status.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -156,12 +157,15 @@ public class AuthController {
         userResponse.put("createdAt", user.getCreatedAt());
         return userResponse;
     }
+    private Response createErrorResponse(String error){
+        return createErrorResponse(error, Response.Status.BAD_REQUEST);
+    }
 
-    private Response createErrorResponse(String error) {
+    private Response createErrorResponse(String error, Response.Status status) {
         Map<String, Object> response = new HashMap<>();
         response.put("success", false);
         response.put("error", error);
-        return Response.status(Response.Status.BAD_REQUEST).entity(response).build();
+        return Response.status(status).entity(response).build();
     }
 
     public static class LoginRequest {
