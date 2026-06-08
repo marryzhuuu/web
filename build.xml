@@ -222,9 +222,9 @@
     ================================================================ -->
     <target name="music" depends="build"
             description="Воспроизведение звука по завершении build">
-        <sound loops="0">
-            <success source="${music.file}"/>
-        </sound>
+        <exec executable="aplay" failonerror="false">
+            <arg value="${music.file}"/>
+        </exec>
         <echo message="BUILD+MUSIC OK"/>
     </target>
 
