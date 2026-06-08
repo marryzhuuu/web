@@ -43,3 +43,42 @@ gretty {
     // Для избежания конфликтов портов
     inplaceMode = 'hard'
 }
+
+// ─── Apache Ant: зависимости ─────────────────────────────────────────────────
+configurations {
+    antCompile          // compile-time (в т.ч. provided-зависимости)
+    antWarBundle        // только те, что попадают в WAR/WEB-INF/lib
+    antTestDeps         // JUnit 5 + junit-platform-launcher
+}
+
+dependencies {
+    // Compile-time (в lib/)
+    antCompile('jakarta.platform:jakarta.jakartaee-api:9.1.0') { transitive = false }
+    antCompile('org.glassfish:jakarta.faces:3.0.3')            { transitive = false }
+    antCompile('jakarta.servlet:jakarta.servlet-api:5.0.0')    { transitive = false }
+    antCompile('org.postgresql:postgresql:42.6.0')             { transitive = false }
+    antCompile 'com.fasterxml.jackson.core:jackson-core:2.15.2'
+    antCompile('org.primefaces:primefaces:13.0.0:jakarta')     { transitive = false }
+
+    // Только в WAR lib/ (в lib/war/)
+    antWarBundle 'com.fasterxml.jackson.core:jackson-core:2.15.2'
+    antWarBundle('org.primefaces:primefaces:13.0.0:jakarta') { transitive = false }
+
+    // Тесты (в lib/test/)
+    antTestDeps 'org.junit.jupiter:junit-jupiter-api:5.9.2'
+    antTestDeps 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
+    antTestDeps 'org.junit.platform:junit-platform-commons:1.9.2'
+    antTestDeps 'org.junit.platform:junit-platform-engine:1.9.2'
+    antTestDeps 'org.junit.platform:junit-platform-launcher:1.9.2'
+    antTestDeps 'org.opentest4j:opentest4j:1.2.0'
+}
+
+tasks.register('copyAntDeps') {
+    group = 'build setup'
+    description = 'Populate lib/ directories for Apache Ant build'
+    doLast {
+        copy { from configurations.antCompile;  into 'lib' }
+        copy { from configurations.antWarBundle; into 'lib/war' }
+        copy { from configurations.antTestDeps; into 'lib/test' }
+    }
+}

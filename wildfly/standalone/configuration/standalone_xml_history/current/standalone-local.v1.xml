@@ -545,7 +545,7 @@
     </socket-binding-group>
     <deployments>
         <deployment name="web.war" runtime-name="web.war">
-            <content sha1="42f6be5b50974c2a94d4657c4656b012c255c532"/>
+            <content sha1="5c4c9f32ce5c88edab0714add61638b49b848b63"/>
         </deployment>
     </deployments>
 </server>

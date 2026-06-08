@@ -15,3 +15,14 @@ build/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+
+### Apache Ant — зависимости (заполняются через ./gradlew copyAntDeps) ###
+lib/*.jar
+lib/war/*.jar
+lib/test/*.jar
+!lib/.gitkeep
+!lib/war/.gitkeep
+!lib/test/.gitkeep
+
+### Чувствительные данные ###
+.env

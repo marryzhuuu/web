@@ -138,17 +138,17 @@
                 <datasource jndi-name="java:jboss/datasources/PostgreSQLDS" pool-name="PostgreSQLDS" enabled="true" use-java-context="true">
                     <connection-url>jdbc:postgresql://localhost:5432/s381731</connection-url>
                     <driver>postgresql</driver>
-                    <pool>
-                        <min-pool-size>5</min-pool-size>
-                        <max-pool-size>20</max-pool-size>
-                        <prefill>true</prefill>
-                    </pool>
                     <security user-name="s381731" password="s381731"/>
                     <validation>
                         <check-valid-connection-sql>SELECT 1</check-valid-connection-sql>
                         <background-validation>true</background-validation>
                         <background-validation-millis>60000</background-validation-millis>
                     </validation>
+                    <pool>
+                        <min-pool-size>5</min-pool-size>
+                        <max-pool-size>20</max-pool-size>
+                        <prefill>true</prefill>
+                    </pool>
                 </datasource>
                 <drivers>
                     <driver name="h2" module="com.h2database.h2">
@@ -544,8 +544,5 @@
         </outbound-socket-binding>
     </socket-binding-group>
     <deployments>
-        <deployment name="web.war" runtime-name="web.war">
-            <content sha1="42f6be5b50974c2a94d4657c4656b012c255c532"/>
-        </deployment>
     </deployments>
 </server>
