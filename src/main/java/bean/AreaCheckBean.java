@@ -18,13 +18,21 @@ import jakarta.el.ELContext;
 import jakarta.el.ExpressionFactory;
 import jakarta.el.ValueExpression;
 
+import mbean.AreaCalculator;
+import mbean.PointStats;
 
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+import java.lang.management.ManagementFactory;
 
 
 @Named("areaCheckBean")
 @ApplicationScoped
 public class AreaCheckBean implements Serializable {
     private static final long serialVersionUID = 1L;
+
+    private static final String POINT_STATS_OBJECT_NAME = "web03:type=Monitoring,name=PointStats";
+    private static final String AREA_OBJECT_NAME = "web03:type=Monitoring,name=AreaCalculator";
 
     private Double x = 0.0;
     private Double y = 0.0;
@@ -35,6 +43,9 @@ public class AreaCheckBean implements Serializable {
 
     private DatabaseService databaseService;
     private ResultsBean resultsBean;
+
+    private transient PointStats pointStats;
+    private transient AreaCalculator areaCalculator;
 
 
     // Получить существующий бин или создать новый
@@ -62,6 +73,32 @@ public class AreaCheckBean implements Serializable {
             resultsBean = new ResultsBean();
             resultsBean.setDatabaseService(databaseService);
         }
+        registerMBeans();
+    }
+
+    private void registerMBeans() {
+        try {
+            MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+
+            pointStats = new PointStats();
+            ObjectName pointStatsName = new ObjectName(POINT_STATS_OBJECT_NAME);
+            if (mbs.isRegistered(pointStatsName)) {
+                mbs.unregisterMBean(pointStatsName);
+            }
+            mbs.registerMBean(pointStats, pointStatsName);
+
+            areaCalculator = new AreaCalculator(r);
+            ObjectName areaName = new ObjectName(AREA_OBJECT_NAME);
+            if (mbs.isRegistered(areaName)) {
+                mbs.unregisterMBean(areaName);
+            }
+            mbs.registerMBean(areaCalculator, areaName);
+
+            System.out.println("MBeans registered: " + POINT_STATS_OBJECT_NAME + ", " + AREA_OBJECT_NAME);
+        } catch (Exception e) {
+            System.err.println("Failed to register MBeans: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public void checkPoint() {
@@ -73,6 +110,13 @@ public class AreaCheckBean implements Serializable {
         Result pointResult = new Result(x, y, r, result, executionTime);
         databaseService.saveResult(pointResult);
         resultsBean.addResult(pointResult);
+
+        if (pointStats != null) {
+            pointStats.recordPoint(result);
+        }
+        if (areaCalculator != null) {
+            areaCalculator.setR(r);
+        }
     }
 
     public void checkPointFromGraph(double x, double y) {

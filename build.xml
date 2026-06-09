@@ -523,6 +523,78 @@ fi
     </target>
 
     <!-- ================================================================
+         deploy-local — деплой WAR в локальный WildFly (через sudo cp)
+    ================================================================ -->
+    <target name="deploy-local" depends="build"
+            description="Собрать WAR и скопировать в ${wildfly.deploy.dir} (требует sudo)">
+        <echo message="Копирование ${dist.dir}/${war.name} → ${wildfly.deploy.dir}/"/>
+        <exec executable="sudo" failonerror="true">
+            <arg value="cp"/>
+            <arg value="${dist.dir}/${war.name}"/>
+            <arg value="${wildfly.deploy.dir}/${war.name}"/>
+        </exec>
+        <echo message="DEPLOY-LOCAL OK — WildFly подхватит WAR через ~5 сек"/>
+        <echo message="Откройте http://localhost:8080/ чтобы инициализировать CDI-бины"/>
+    </target>
+
+    <!-- ================================================================
+         jconsole — запуск JConsole от имени root (WildFly работает как root)
+    ================================================================ -->
+    <target name="jconsole"
+            description="Запуск JConsole от root для локального attach к WildFly">
+        <echo message="WildFly запущен через sudo → JConsole тоже нужен от root."/>
+        <echo message="Выполните одну из команд:"/>
+        <echo message="  sudo -E jconsole"/>
+        <echo message="  sudo DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY jconsole"/>
+        <echo message="Затем выберите WildFly в разделе Local Process и нажмите Connect."/>
+        <exec executable="sudo" failonerror="false" spawn="true">
+            <arg value="-E"/>
+            <arg value="jconsole"/>
+        </exec>
+    </target>
+
+    <!-- ================================================================
+         visualvm — запуск VisualVM 2.2.1 standalone от имени root
+         Установка:
+           wget https://github.com/oracle/visualvm/releases/download/2.2.1/visualvm_221.zip
+           unzip visualvm_221.zip   (в домашней директории пользователя)
+    ================================================================ -->
+    <target name="visualvm"
+            description="Запуск VisualVM 2.2.1 (standalone) от root для профилирования WildFly">
+        <echo message="Запуск ${visualvm.bin} от root..."/>
+        <echo message="Если файл не найден — установите:"/>
+        <echo message="  wget https://github.com/oracle/visualvm/releases/download/2.2.1/visualvm_221.zip"/>
+        <echo message="  unzip visualvm_221.zip"/>
+        <exec executable="sudo" failonerror="false" spawn="true">
+            <env key="DISPLAY" value="${env.DISPLAY}"/>
+            <env key="XAUTHORITY" value="${env.XAUTHORITY}"/>
+            <arg value="${visualvm.bin}"/>
+        </exec>
+    </target>
+
+    <!-- ================================================================
+         jmx-report — вывод PID WildFly и снятие показаний MBeans через jcmd
+    ================================================================ -->
+    <target name="jmx-report"
+            description="Найти PID WildFly и вывести сводку JMX-атрибутов MBeans">
+        <echo message="=== WildFly JVM processes ==="/>
+        <exec executable="bash" failonerror="false" outputproperty="jmx.pids">
+            <arg value="-c"/>
+            <arg value="jcmd | grep -i 'jboss\|wildfly\|standalone' || echo '(WildFly process not found)'"/>
+        </exec>
+        <echo message="${jmx.pids}"/>
+
+        <echo message=""/>
+        <echo message="=== Подключение к MBeans ==="/>
+        <echo message="  JMX RMI URL  : service:jmx:rmi:///jndi/rmi://localhost:9999/jmxrmi"/>
+        <echo message="  MBean domain : web03"/>
+        <echo message="  PointStats   : web03:type=Monitoring,name=PointStats"/>
+        <echo message="    Атрибуты   : TotalPoints, MissedPoints, ConsecutiveMisses"/>
+        <echo message="  AreaCalculator: web03:type=Monitoring,name=AreaCalculator"/>
+        <echo message="    Атрибуты   : R, Area, CircleArea, RectangleArea, TriangleArea"/>
+    </target>
+
+    <!-- ================================================================
          history — поиск последней компилируемой ревизии; diff если не компилируется
     ================================================================ -->
     <target name="history"
